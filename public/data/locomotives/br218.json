@@ -1,0 +1,31 @@
+{
+  "id": "br218",
+  "name": "Class 218 Diesel-Hydraulic",
+  "type": "diesel",
+  "massTonnes": 79,
+  "lengthMetres": 16.4,
+  "maxSpeedKmh": 140,
+  "throttleNotches": 8,
+  "maxPowerKW": 1840,
+  "maxTractiveEffortKN": 235,
+  "dynamicBrakeEffortKN": 130,
+  "resistance": { "a": 3200, "b": 95, "c": 5.4 },
+  "adhesion": { "drivenMassFraction": 1.0, "baseFriction": 0.33 },
+  "brakes": {
+    "mainReservoirBar": 9.0,
+    "brakePipeBar": 5.0,
+    "maxBrakeCylinderBar": 3.8,
+    "brakeForcePerBarKN": 100,
+    "pipeChargeRateBar": 0.9,
+    "propagationSecondsPerMetre": 0.004
+  },
+  "diesel": {
+    "idleRpm": 320,
+    "maxRpm": 900,
+    "turboLagSeconds": 1.8,
+    "fuelCapacityLitres": 3150,
+    "fuelBurnLitresPerHourMax": 210,
+    "coolingNominalC": 78,
+    "coolingMaxC": 110
+  }
+}

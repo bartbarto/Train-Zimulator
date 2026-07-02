@@ -1,0 +1,34 @@
+{
+  "id": "type12",
+  "name": "Stoomlocomotief Type 12",
+  "type": "steam",
+  "massTonnes": 117,
+  "lengthMetres": 23.3,
+  "maxSpeedKmh": 120,
+  "throttleNotches": 8,
+  "maxPowerKW": 2160,
+  "maxTractiveEffortKN": 190,
+  "dynamicBrakeEffortKN": 0,
+  "resistance": { "a": 4800, "b": 120, "c": 6.2 },
+  "adhesion": { "drivenMassFraction": 0.48, "baseFriction": 0.31 },
+  "brakes": {
+    "mainReservoirBar": 9.0,
+    "brakePipeBar": 5.0,
+    "maxBrakeCylinderBar": 3.6,
+    "brakeForcePerBarKN": 68,
+    "pipeChargeRateBar": 0.75,
+    "propagationSecondsPerMetre": 0.0045
+  },
+  "steam": {
+    "boilerPressureBar": 20,
+    "idlePressureBar": 12,
+    "criticalSpeedKmh": 50,
+    "waterCapacityLitres": 14000,
+    "coalCapacityKg": 11500,
+    "coalBurnKgPerHourMax": 3400,
+    "waterUseLitresPerHourMax": 22000,
+    "steamLagSeconds": 2.6,
+    "boilerNominalC": 195,
+    "boilerMaxC": 365
+  }
+}

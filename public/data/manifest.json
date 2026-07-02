@@ -1,0 +1,8 @@
+{
+  "locomotives": ["br218", "mr08", "type12"],
+  "routes": ["valley"],
+  "defaults": {
+    "locomotive": "br218",
+    "route": "valley"
+  }
+}

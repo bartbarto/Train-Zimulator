@@ -1,0 +1,28 @@
+{
+  "id": "mr08",
+  "name": "NMBS/SNCB MR08 (Siemens Desiro ML)",
+  "type": "electric",
+  "massTonnes": 147,
+  "lengthMetres": 79.9,
+  "maxSpeedKmh": 160,
+  "throttleNotches": 5,
+  "maxPowerKW": 2200,
+  "maxTractiveEffortKN": 200,
+  "dynamicBrakeEffortKN": 180,
+  "trailingMassTonnes": 0,
+  "trailingLengthMetres": 0,
+  "resistance": { "a": 7200, "b": 175, "c": 7.8 },
+  "adhesion": { "drivenMassFraction": 0.92, "baseFriction": 0.34 },
+  "brakes": {
+    "mainReservoirBar": 9.0,
+    "brakePipeBar": 5.0,
+    "maxBrakeCylinderBar": 3.6,
+    "brakeForcePerBarKN": 75,
+    "pipeChargeRateBar": 1.1,
+    "propagationSecondsPerMetre": 0.002
+  },
+  "electric": {
+    "lineVoltageKV": 3,
+    "requiresPantograph": true
+  }
+}
