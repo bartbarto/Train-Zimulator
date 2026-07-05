@@ -70,6 +70,10 @@ export interface BrakeSpec {
 export interface LocomotiveSpec {
   id: string
   name: string
+  /** Cab interior tint as a hex string or number (e.g. `"0x7e7e7e"`). */
+  cabColor?: string | number
+  /** Accent tint for the cab ceiling and side panels (e.g. `"0xf5d803"`). */
+  cabColorAccent?: string | number
   type: LocomotivePowerType
   /** Locomotive mass in tonnes. */
   massTonnes: number

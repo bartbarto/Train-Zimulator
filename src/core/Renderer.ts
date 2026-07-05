@@ -7,6 +7,7 @@ import {
   WebGLRenderer,
 } from 'three'
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'
+import { FXAAPass } from 'three/addons/postprocessing/FXAAPass.js'
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'
@@ -28,7 +29,7 @@ export const DEFAULT_RENDERER_OPTIONS: RendererOptions = {
 
 /**
  * Wraps the WebGL renderer with physically based defaults: ACES tone mapping,
- * sRGB output, soft shadow maps and an optional bloom post-processing chain.
+ * sRGB output, soft shadow maps, FXAA and an optional bloom post-processing chain.
  * Owns resize handling and exposes a single {@link render} entry point.
  */
 export class Renderer {
@@ -42,7 +43,8 @@ export class Renderer {
   constructor(canvas: HTMLCanvasElement, options: Partial<RendererOptions> = {}) {
     this.canvas = canvas
     this.options = { ...DEFAULT_RENDERER_OPTIONS, ...options }
-    this.gl = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' })
+    // MSAA on the default framebuffer does not apply to EffectComposer targets; FXAA handles AA.
+    this.gl = new WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' })
     this.gl.outputColorSpace = SRGBColorSpace
     this.gl.toneMapping = ACESFilmicToneMapping
     this.gl.toneMappingExposure = this.options.exposure
@@ -63,6 +65,7 @@ export class Renderer {
     this.bloomPass = new UnrealBloomPass(size, 0.01, 0.4, 0.95)
     this.bloomPass.enabled = this.options.bloom
     this.composer.addPass(this.bloomPass)
+    this.composer.addPass(new FXAAPass())
     this.composer.addPass(new OutputPass())
     this.resize()
   }
@@ -101,7 +104,7 @@ export class Renderer {
   }
 
   render(scene: Scene, camera: PerspectiveCamera): void {
-    if (this.composer && this.options.bloom) this.composer.render()
+    if (this.composer) this.composer.render()
     else this.gl.render(scene, camera)
   }
 

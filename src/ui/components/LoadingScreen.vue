@@ -6,8 +6,7 @@ defineProps<{ progress: number }>()
   <div class="loading">
     <div class="brand">
       <div class="logo">▮▮▮</div>
-      <h1>RAILDRIVE</h1>
-      <p>First-Person Train Simulator</p>
+      <h1>TRAIN ZIMULATOR</h1>
     </div>
     <div class="bar">
       <div class="fill" :style="{ width: `${Math.round(progress * 100)}%` }" />
@@ -26,7 +25,7 @@ defineProps<{ progress: number }>()
   align-items: center;
   justify-content: center;
   gap: 1.2rem;
-  background: radial-gradient(circle at 50% 35%, #131c2b, #04060a 70%);
+  background: radial-gradient(circle at 50% 50%, #122950 30%, #ffffff 30.15%);
 }
 .brand {
   text-align: center;

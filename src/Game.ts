@@ -60,6 +60,7 @@ export class Game {
   private debugVisible = false
   private snapshotTimer = 0
   private locomotiveId = 'br218'
+  private locomotiveSpec!: LocomotiveSpec
   private content!: ContentLoader
   private routeSpec!: RouteSpec
   private locomotiveOptions: LocomotiveOption[] = []
@@ -85,7 +86,10 @@ export class Game {
     this.world = new World(this.sim.route, this.routeSpec)
     this.scene.scene.add(this.world.group)
 
-    this.cab = new Cab(this.sim.route.track, this.settings.settings.camera, this.renderer.aspect)
+    this.cab = new Cab(this.sim.route.track, this.settings.settings.camera, this.renderer.aspect, {
+      cabColor: this.locomotiveSpec.cabColor,
+      cabColorAccent: this.locomotiveSpec.cabColorAccent,
+    })
     this.scene.scene.add(this.cab.root)
 
     this.cabController = new CabController(this.input, this.cab, this.sim.train.controls, {
@@ -126,9 +130,11 @@ export class Game {
 
   private async applyLocomotive(id: string): Promise<void> {
     const loco = await this.content.loadLocomotive(id)
+    this.locomotiveSpec = loco
     this.locomotiveId = loco.id
     this.sim = new Simulation(loco, this.routeSpec)
     this.prepareTrain(loco)
+    this.cab?.setCabColors({ cabColor: loco.cabColor, cabColorAccent: loco.cabColorAccent })
     savePreferredLocomotive(id)
   }
 

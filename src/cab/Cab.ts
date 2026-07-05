@@ -2,7 +2,7 @@ import { Group, Mesh, MeshStandardMaterial, PointLight, SpotLight, Vector3 } fro
 import { clamp01, damp, lerp } from '@/engine/math'
 import type { CameraConfig } from './CabCamera'
 import { CabCamera } from './CabCamera'
-import { CabModel } from './CabModel'
+import { CabModel, type CabColorOptions } from './CabModel'
 import { Interaction } from './Interaction'
 import { Gauges } from './Gauges'
 import type { CabControlHandle } from './types'
@@ -16,16 +16,17 @@ export class Cab {
   readonly interaction: Interaction
   readonly handles: CabControlHandle[]
 
-  private readonly model = new CabModel()
+  private readonly model: CabModel
   private readonly gauges = new Gauges()
   private readonly cabLight = new PointLight(0xffe6b0, 1.4, 6)
   private readonly headlight = new SpotLight(0xfff0d4, 0, 280, Math.PI / 4.5, 0.35, 1.5)
   private readonly pose: TrackPose
   private readonly track: ITrackProvider
 
-  constructor(track: ITrackProvider, cameraConfig: CameraConfig, aspect: number) {
+  constructor(track: ITrackProvider, cameraConfig: CameraConfig, aspect: number, colors: CabColorOptions = {}) {
     this.track = track
     this.camera = new CabCamera(cameraConfig, aspect)
+    this.model = new CabModel(colors)
     this.handles = this.model.handles
     this.interaction = new Interaction(this.handles)
 
@@ -79,6 +80,10 @@ export class Cab {
 
   update(dt: number): void {
     this.camera.update(dt)
+  }
+
+  setCabColors(colors: CabColorOptions = {}): void {
+    this.model.setCabColors(colors)
   }
 
   /** Front headlight — auto-on at night; optional manual dim/bright via control state. */

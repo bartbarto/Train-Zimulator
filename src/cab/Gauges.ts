@@ -8,8 +8,8 @@ import {
 } from 'three'
 import { clamp, lerp } from '@/engine/math'
 
-const NEEDLE_MIN = Math.PI * 1.25 // sweep start (radians)
-const NEEDLE_MAX = -Math.PI * 0.25 // sweep end
+const NEEDLE_MIN = -Math.PI * 1.35 // sweep start (radians)
+const NEEDLE_MAX = -Math.PI * 2.7 // sweep start (radians)
 
 /**
  * Physical gauge dials mounted on the console: a speedometer and a brake-pipe
@@ -24,8 +24,8 @@ export class Gauges {
   private brakeAngle = NEEDLE_MIN
 
   constructor() {
-    this.speedNeedle = this.buildDial(-0.32, 0x101216)
-    this.brakeNeedle = this.buildDial(0.32, 0x101216)
+    this.speedNeedle = this.buildDial(-0.32, 0xbcbcbc)
+    this.brakeNeedle = this.buildDial(0.32, 0xbcbcbc)
   }
 
   private buildDial(x: number, color: number): Object3D {
