@@ -40,7 +40,13 @@ export class StationService {
     this.route = route
   }
 
-  update(dt: number, controls: Controls, distance: number, speedMs: number): void {
+  update(
+    dt: number,
+    controls: Controls,
+    distance: number,
+    speedMs: number,
+    allPassengersBoarded = false,
+  ): void {
     const station = this.findRelevantStation(distance)
     const stopped = Math.abs(speedMs) <= STOPPED_SPEED_MS
     const inStopZone = !!station && isInStopZone(station, distance)
@@ -88,7 +94,7 @@ export class StationService {
       }
       if (!this.served.has(station.id)) {
         this.boardingRemaining = Math.max(0, this.boardingRemaining - dt)
-        if (this.boardingRemaining <= 0) this.served.add(station.id)
+        if (this.boardingRemaining <= 0 || allPassengersBoarded) this.served.add(station.id)
       }
       this.phase = this.served.has(station.id) ? 'readyToDepart' : 'boarding'
       this.message = this.served.has(station.id)
@@ -150,6 +156,18 @@ export class StationService {
       isInStopZone(station, distance) &&
       distance < getStopZoneEnd(station) - INCH_ZONE_END_MARGIN_M
     )
+  }
+
+  get servedCount(): number {
+    return this.served.size
+  }
+
+  get totalStations(): number {
+    return this.route.spec.stations.length
+  }
+
+  getRelevantStation(distance: number): StationSpec | null {
+    return this.findRelevantStation(distance)
   }
 
   getState(distance = 0): StationServiceState {

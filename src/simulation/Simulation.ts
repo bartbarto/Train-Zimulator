@@ -6,6 +6,7 @@ import { AITrain } from './AITrain'
 import type { Occupancy } from './SignalSystem'
 import { StationService, type StationServiceState } from './StationService'
 import { computeAutoBrake } from './SpeedGovernor'
+import { SessionStats, type SessionResult } from './SessionStats'
 
 /**
  * Owns the entire deterministic simulation: the player's train, the AI traffic,
@@ -18,8 +19,10 @@ export class Simulation {
   readonly environment = new Environment()
   readonly aiTrains: AITrain[]
   readonly stations: StationService
+  readonly sessionStats = new SessionStats()
 
   private readonly occupancies: Occupancy[] = []
+  private allPassengersBoardedCheck: ((stationId: string) => boolean) | null = null
 
   constructor(loco: LocomotiveSpec, routeSpec: RouteSpec) {
     this.route = new RouteManager(routeSpec)
@@ -40,7 +43,11 @@ export class Simulation {
     const distance = this.train.physics.distance
     const speedMs = this.train.physics.speed
 
-    this.stations.update(dt, controls, distance, speedMs)
+    const station = this.stations.getRelevantStation(distance)
+    const allPassengersBoarded =
+      !!station && (this.allPassengersBoardedCheck?.(station.id) ?? false)
+
+    this.stations.update(dt, controls, distance, speedMs, allPassengersBoarded)
     const tractionPolicy = this.stations.getTractionPolicy(controls, distance)
     const stationState = this.stations.getState(distance)
     const progress = this.route.getProgress(distance)
@@ -56,6 +63,33 @@ export class Simulation {
       controls.state.doorsOpen,
     )
     this.train.update(dt)
+
+    this.sessionStats.update(dt, {
+      speedMs,
+      speedLimitKmh: progress.speedLimitKmh,
+      stationMessage: stationState.message,
+      stationId: stationState.station?.id ?? null,
+      stationName: stationState.station?.name ?? null,
+    })
+  }
+
+  setAllPassengersBoardedCheck(fn: (stationId: string) => boolean): void {
+    this.allPassengersBoardedCheck = fn
+  }
+
+  isRouteComplete(): boolean {
+    return this.sessionStats.checkComplete(this.train.physics.distance, this.route.track.length)
+  }
+
+  getSessionResult(routeName: string, passengersTransported: number): SessionResult {
+    return this.sessionStats.getResult(
+      routeName,
+      passengersTransported,
+      this.stations.servedCount,
+      this.stations.totalStations,
+      this.train.physics.distance,
+      this.route.track.length,
+    )
   }
 
   private updateSignals(): void {

@@ -65,6 +65,14 @@ export class World {
     return this.stations.getWaitingPassengerCount(stationId)
   }
 
+  getBoardedPassengerCount(): number {
+    return this.stations.getBoardedPassengerCount()
+  }
+
+  areAllPassengersBoarded(stationId: string): boolean {
+    return this.stations.areAllPassengersBoarded(stationId)
+  }
+
   getPlatformLookTarget(stationId: string | null, out: Vector3): boolean {
     return this.stations.getPlatformLookTarget(stationId, out)
   }

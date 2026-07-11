@@ -131,6 +131,24 @@ export class Stations {
     }
   }
 
+  /** True when every passenger at a platform has boarded. */
+  areAllPassengersBoarded(stationId: string): boolean {
+    const platform = this.platforms.find((p) => p.id === stationId)
+    if (!platform || platform.passengers.length === 0) return false
+    return platform.passengers.every((passenger) => passenger.boarded)
+  }
+
+  /** Passengers who have boarded across all platforms this session. */
+  getBoardedPassengerCount(): number {
+    let count = 0
+    for (const platform of this.platforms) {
+      for (const passenger of platform.passengers) {
+        if (passenger.boarded) count++
+      }
+    }
+    return count
+  }
+
   /** Passengers still waiting or walking at a station (not yet aboard). */
   getWaitingPassengerCount(stationId: string | null): number {
     if (!stationId) return 0

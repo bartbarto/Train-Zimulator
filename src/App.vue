@@ -11,10 +11,11 @@ import HUD from '@/ui/components/HUD.vue'
 import Crosshair from '@/ui/components/Crosshair.vue'
 import DebugOverlay from '@/ui/components/DebugOverlay.vue'
 import PauseMenu from '@/ui/components/PauseMenu.vue'
+import EndOfLineScreen from '@/ui/components/EndOfLineScreen.vue'
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 const store = useSimStore()
-const { snapshot, phase, loadProgress, showHud, showDebug } = storeToRefs(store)
+const { snapshot, phase, loadProgress, showHud, showDebug, sessionResult } = storeToRefs(store)
 
 const settings = markRaw(new SettingsManager())
 const game = shallowRef<Game | null>(null)
@@ -28,9 +29,15 @@ onMounted(async () => {
     new Game(canvas.value, settings, {
       onProgress: (v) => store.setLoadProgress(v),
       onSnapshot: (s) => store.setSnapshot(s),
-      onPauseChanged: (paused) => store.setPhase(paused ? 'paused' : 'playing'),
+      onPauseChanged: (paused) => {
+        if (store.phase !== 'finished') store.setPhase(paused ? 'paused' : 'playing')
+      },
       onHudChanged: (v) => (store.showHud = v),
       onDebugChanged: (v) => (store.showDebug = v),
+      onSessionComplete: (result) => {
+        store.setSessionResult(result)
+        store.setPhase('finished')
+      },
       onContentReady: (locomotives, routes, locoId, routeId) => {
         const resolvedLoco = instance.resolveStartLocomotive(locoId, launch.locomotiveId)
         const resolvedRoute = instance.resolveStartRoute(routeId, launch.routeId)
@@ -73,6 +80,12 @@ async function beginSession(locomotiveId: string, routeId: string): Promise<void
 function resume(): void {
   game.value?.setPaused(false)
 }
+
+function returnToMenu(): void {
+  game.value?.returnToMenu()
+  store.setSessionResult(null)
+  store.setPhase('menu')
+}
 </script>
 
 <template>
@@ -90,5 +103,10 @@ function resume(): void {
       <DebugOverlay v-if="showDebug" :snapshot="snapshot" />
       <PauseMenu v-if="phase === 'paused' && game" :game="game" :settings="settings" @resume="resume" />
     </template>
+    <EndOfLineScreen
+      v-else-if="phase === 'finished' && sessionResult"
+      :result="sessionResult"
+      @menu="returnToMenu"
+    />
   </div>
 </template>

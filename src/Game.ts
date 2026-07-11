@@ -26,6 +26,7 @@ import { CabController } from '@/cab/CabController'
 import { SoundController } from '@/audio/SoundController'
 import { buildSnapshot } from '@/ui/snapshot'
 import type { UiSnapshot } from '@/ui/types'
+import type { SessionResult } from '@/simulation/SessionStats'
 
 export interface GameCallbacks {
   onProgress: (value: number) => void
@@ -33,6 +34,7 @@ export interface GameCallbacks {
   onPauseChanged: (paused: boolean) => void
   onHudChanged: (visible: boolean) => void
   onDebugChanged: (visible: boolean) => void
+  onSessionComplete: (result: SessionResult) => void
   onContentReady: (locomotives: LocomotiveOption[], routes: RouteOption[], locomotiveId: string, routeId: string) => void
   onLocomotivesReady: (options: LocomotiveOption[], currentId: string) => void
   onLocomotiveChanged: (id: string) => void
@@ -76,6 +78,7 @@ export class Game {
   private routeOptions: RouteOption[] = []
   private switching = false
   private sessionReady = false
+  private finished = false
 
   constructor(canvas: HTMLCanvasElement, settings: SettingsManager, callbacks: GameCallbacks) {
     this.canvas = canvas
@@ -130,6 +133,7 @@ export class Game {
 
     this.world = new World(this.sim.route, this.routeSpec)
     this.scene.scene.add(this.world.group)
+    this.sim.setAllPassengersBoardedCheck((stationId) => this.world.areAllPassengersBoarded(stationId))
 
     this.cab = new Cab(this.sim.route.track, this.settings.settings.camera, this.renderer.aspect, {
       cabColor: this.locomotiveSpec.cabColor,
@@ -157,6 +161,7 @@ export class Game {
     savePreferredLocomotive(locomotiveId)
     savePreferredRoute(routeId)
     this.sessionReady = true
+    this.finished = false
     this.callbacks.onLocomotivesReady(this.locomotiveOptions, this.locomotiveId)
   }
 
@@ -176,6 +181,7 @@ export class Game {
     this.sim = undefined!
     this.sessionReady = false
     this.paused = false
+    this.finished = false
   }
 
   resolveStartLocomotive(defaultId: string, override?: string | null): string {
@@ -263,15 +269,32 @@ export class Game {
   }
 
   private fixedUpdate(dt: number): void {
-    if (!this.sessionReady || this.paused) return
+    if (!this.sessionReady || this.paused || this.finished) return
     this.sim.update(dt)
+    if (this.sim.isRouteComplete()) {
+      this.finishSession()
+    }
+  }
+
+  private finishSession(): void {
+    if (this.finished) return
+    this.finished = true
+    this.paused = true
+    this.input.mouse.releaseLook()
+    const passengers = this.world.getBoardedPassengerCount()
+    const result = this.sim.getSessionResult(this.routeSpec.name, passengers)
+    this.callbacks.onSessionComplete(result)
+  }
+
+  returnToMenu(): void {
+    this.teardownSession()
   }
 
   private render(frameDt: number): void {
     if (!this.sessionReady) return
 
     const snapshot = this.input.update(frameDt)
-    if (!this.paused) this.cabController.update(snapshot, frameDt)
+    if (!this.paused && !this.finished) this.cabController.update(snapshot, frameDt)
 
     const train = this.sim.train
     this.cab.ride(train.physics.distance)
@@ -285,7 +308,7 @@ export class Game {
     this.cab.camera.camera.getWorldPosition(this.cameraWorldPos)
     this.scene.update(this.sim.environment, this.cab.root.position)
     const stationState = this.sim.getStationService()
-    this.world.update(this.paused ? 0 : frameDt, this.sim.environment, this.cameraWorldPos, {
+    this.world.update(this.paused || this.finished ? 0 : frameDt, this.sim.environment, this.cameraWorldPos, {
       trainDistance: train.physics.distance,
       trainSpeedMs: train.physics.speed,
       doorsOpen: train.controls.state.doorsOpen,
