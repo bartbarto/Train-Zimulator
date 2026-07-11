@@ -23,7 +23,7 @@ export class World {
 
   constructor(route: RouteManager, routeSpec: RouteSpec) {
     const bounds = this.computeBounds(routeSpec)
-    const terrain = new Terrain(bounds)
+    const terrain = new Terrain(bounds, route.track)
     const trackMesh = new TrackMesh(route.track)
     const scenery = new Scenery(route.track, terrain, bounds, 16000)
     const stations = new Stations(routeSpec.stations, route.track)

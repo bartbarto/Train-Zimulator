@@ -1,4 +1,6 @@
-import { BufferAttribute, Mesh, MeshStandardMaterial, PlaneGeometry } from 'three'
+import { BufferAttribute, Mesh, MeshStandardMaterial, PlaneGeometry, Vector3 } from 'three'
+import { clamp01, lerp } from '@/engine/math'
+import type { Track } from './Track'
 
 export interface TerrainBounds {
   minX: number
@@ -7,15 +9,28 @@ export interface TerrainBounds {
   maxZ: number
 }
 
+interface TrackSample {
+  x: number
+  y: number
+  z: number
+}
+
+const TRACK_BLEND_INNER_M = 22
+const TRACK_BLEND_OUTER_M = 95
+const TRACK_BED_OFFSET_M = 1.0
+
 /**
- * Procedural ground. A subdivided plane is displaced by layered trigonometric
- * noise: a gentle valley floor near the line and larger hills further out, so
- * the track corridor stays clear while the horizon has relief. Generated once.
+ * Procedural ground that follows the track elevation in the corridor and blends
+ * into rolling hills further away, so embankments sit on ground that matches
+ * the line's gradient.
  */
 export class Terrain {
   readonly mesh: Mesh
+  private readonly samples: TrackSample[]
 
-  constructor(bounds: TerrainBounds) {
+  constructor(bounds: TerrainBounds, track: Track) {
+    this.samples = sampleTrack(track, Math.max(240, Math.floor(track.length / 10)))
+
     const width = bounds.maxX - bounds.minX
     const depth = bounds.maxZ - bounds.minZ
     const segX = Math.min(160, Math.floor(width / 24))
@@ -38,12 +53,60 @@ export class Terrain {
     this.mesh.receiveShadow = true
   }
 
-  /** Valley floor near the corridor, rising into hills away from the line. */
   heightAt(x: number, z: number): number {
-    const base = -3 + 2.2 * Math.sin(x * 0.011) * Math.cos(z * 0.008)
-    const corridorDist = Math.max(0, Math.abs(x - 475) - 480)
-    const hills = (1 - Math.exp(-corridorDist * 0.004)) * 46
-    const hillShape = 0.5 + 0.5 * Math.sin(x * 0.0035 + 1.3) * Math.cos(z * 0.0026)
-    return base + hills * hillShape
+    const { height: trackY, lateralDist } = this.trackInfluence(x, z)
+    const wild = this.proceduralHeight(x, z)
+    const t = clamp01((lateralDist - TRACK_BLEND_INNER_M) / (TRACK_BLEND_OUTER_M - TRACK_BLEND_INNER_M))
+    const blend = t * t * (3 - 2 * t)
+    return lerp(trackY - TRACK_BED_OFFSET_M, wild, blend)
   }
+
+  /** Nearest point on the sampled centre line (XZ), with interpolated elevation. */
+  private trackInfluence(x: number, z: number): { height: number; lateralDist: number } {
+    let bestDist2 = Infinity
+    let bestY = 0
+
+    for (let i = 0; i < this.samples.length - 1; i++) {
+      const a = this.samples[i]!
+      const b = this.samples[i + 1]!
+      const t = closestPointOnSegmentXZ(x, z, a, b)
+      const px = lerp(a.x, b.x, t)
+      const pz = lerp(a.z, b.z, t)
+      const py = lerp(a.y, b.y, t)
+      const dx = x - px
+      const dz = z - pz
+      const d2 = dx * dx + dz * dz
+      if (d2 < bestDist2) {
+        bestDist2 = d2
+        bestY = py
+      }
+    }
+
+    return { height: bestY, lateralDist: Math.sqrt(bestDist2) }
+  }
+
+  /** Rolling hills away from the corridor. */
+  private proceduralHeight(x: number, z: number): number {
+    const base = -4 + 2.0 * Math.sin(x * 0.011) * Math.cos(z * 0.008)
+    const hills = 42 * (0.5 + 0.5 * Math.sin(x * 0.0035 + 1.3) * Math.cos(z * 0.0026))
+    return base + hills
+  }
+}
+
+function sampleTrack(track: Track, count: number): TrackSample[] {
+  const out: TrackSample[] = []
+  const point = new Vector3()
+  for (let i = 0; i <= count; i++) {
+    track.curve.getPointAt(i / count, point)
+    out.push({ x: point.x, y: point.y, z: point.z })
+  }
+  return out
+}
+
+function closestPointOnSegmentXZ(x: number, z: number, a: TrackSample, b: TrackSample): number {
+  const dx = b.x - a.x
+  const dz = b.z - a.z
+  const len2 = dx * dx + dz * dz
+  if (len2 < 1e-6) return 0
+  return clamp01(((x - a.x) * dx + (z - a.z) * dz) / len2)
 }

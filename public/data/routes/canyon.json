@@ -1,0 +1,40 @@
+{
+  "id": "canyon",
+  "name": "Canyon Express",
+  "trailingMassTonnes": 420,
+  "trailingLengthMetres": 196,
+  "points": [
+    { "x": 0, "y": 0, "z": 0 },
+    { "x": 30, "y": 2, "z": 500 },
+    { "x": 100, "y": 8, "z": 1000 },
+    { "x": 220, "y": 15, "z": 1500 },
+    { "x": 380, "y": 20, "z": 2000 },
+    { "x": 500, "y": 18, "z": 2500 },
+    { "x": 560, "y": 12, "z": 3000 },
+    { "x": 540, "y": 6, "z": 3500 },
+    { "x": 460, "y": 2, "z": 4000 },
+    { "x": 340, "y": 0, "z": 4500 },
+    { "x": 200, "y": 0, "z": 5000 }
+  ],
+  "stations": [
+    { "id": "mouth", "name": "Canyon Mouth", "distance": 1100, "platformLength": 200 },
+    { "id": "lookout", "name": "Lookout Point", "distance": 2800, "platformLength": 180 },
+    { "id": "redrock", "name": "Red Rock Terminus", "distance": 5000, "platformLength": 220 }
+  ],
+  "speedLimits": [
+    { "distance": 0, "limitKmh": 90 },
+    { "distance": 1000, "limitKmh": 55 },
+    { "distance": 1700, "limitKmh": 40 },
+    { "distance": 2600, "limitKmh": 50 },
+    { "distance": 3400, "limitKmh": 70 },
+    { "distance": 4600, "limitKmh": 45 }
+  ],
+  "signals": [
+    { "id": "x1", "distance": 500 },
+    { "id": "x2", "distance": 1200 },
+    { "id": "x3", "distance": 2000 },
+    { "id": "x4", "distance": 2800 },
+    { "id": "x5", "distance": 3600 },
+    { "id": "x6", "distance": 4400 }
+  ]
+}

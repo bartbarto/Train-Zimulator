@@ -1,0 +1,41 @@
+{
+  "id": "industrial",
+  "name": "Industrial Belt Railway",
+  "trailingMassTonnes": 420,
+  "trailingLengthMetres": 196,
+  "points": [
+    { "x": 0, "y": 0, "z": 0 },
+    { "x": 50, "y": 0, "z": 600 },
+    { "x": 120, "y": 1, "z": 1200 },
+    { "x": 180, "y": 1, "z": 1800 },
+    { "x": 200, "y": 0, "z": 2400 },
+    { "x": 180, "y": 0, "z": 3000 },
+    { "x": 120, "y": 1, "z": 3600 },
+    { "x": 50, "y": 1, "z": 4200 },
+    { "x": -20, "y": 0, "z": 4800 },
+    { "x": -80, "y": 0, "z": 5400 },
+    { "x": -100, "y": 0, "z": 6000 }
+  ],
+  "stations": [
+    { "id": "works", "name": "Works Yard", "distance": 1500, "platformLength": 220 },
+    { "id": "central", "name": "Central Exchange", "distance": 3200, "platformLength": 240 },
+    { "id": "docklands", "name": "Docklands Terminus", "distance": 5800, "platformLength": 220 }
+  ],
+  "speedLimits": [
+    { "distance": 0, "limitKmh": 90 },
+    { "distance": 1400, "limitKmh": 60 },
+    { "distance": 2800, "limitKmh": 75 },
+    { "distance": 3800, "limitKmh": 90 },
+    { "distance": 5200, "limitKmh": 55 },
+    { "distance": 5700, "limitKmh": 40 }
+  ],
+  "signals": [
+    { "id": "i1", "distance": 700 },
+    { "id": "i2", "distance": 1500 },
+    { "id": "i3", "distance": 2300 },
+    { "id": "i4", "distance": 3100 },
+    { "id": "i5", "distance": 3900 },
+    { "id": "i6", "distance": 4700 },
+    { "id": "i7", "distance": 5500 }
+  ]
+}

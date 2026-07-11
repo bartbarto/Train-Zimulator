@@ -1,0 +1,41 @@
+{
+  "id": "highland",
+  "name": "Highland Pass Line",
+  "trailingMassTonnes": 420,
+  "trailingLengthMetres": 196,
+  "points": [
+    { "x": 0, "y": 0, "z": 0 },
+    { "x": 20, "y": 3, "z": 400 },
+    { "x": 60, "y": 10, "z": 800 },
+    { "x": 140, "y": 22, "z": 1200 },
+    { "x": 250, "y": 35, "z": 1600 },
+    { "x": 380, "y": 42, "z": 2000 },
+    { "x": 480, "y": 38, "z": 2400 },
+    { "x": 520, "y": 28, "z": 2800 },
+    { "x": 480, "y": 16, "z": 3200 },
+    { "x": 380, "y": 8, "z": 3600 },
+    { "x": 240, "y": 3, "z": 4000 },
+    { "x": 100, "y": 0, "z": 4400 }
+  ],
+  "stations": [
+    { "id": "glenfoot", "name": "Glenfoot", "distance": 1200, "platformLength": 200 },
+    { "id": "summit", "name": "Pass Summit", "distance": 2400, "platformLength": 180 },
+    { "id": "lochside", "name": "Lochside Terminus", "distance": 4300, "platformLength": 220 }
+  ],
+  "speedLimits": [
+    { "distance": 0, "limitKmh": 80 },
+    { "distance": 900, "limitKmh": 50 },
+    { "distance": 1800, "limitKmh": 40 },
+    { "distance": 2600, "limitKmh": 55 },
+    { "distance": 3400, "limitKmh": 65 },
+    { "distance": 4000, "limitKmh": 45 }
+  ],
+  "signals": [
+    { "id": "h1", "distance": 500 },
+    { "id": "h2", "distance": 1100 },
+    { "id": "h3", "distance": 1900 },
+    { "id": "h4", "distance": 2700 },
+    { "id": "h5", "distance": 3500 },
+    { "id": "h6", "distance": 4200 }
+  ]
+}

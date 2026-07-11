@@ -56,19 +56,22 @@ export class SignalMast {
     post.castShadow = true
     mast.add(post)
 
+    const head = new Group()
+    head.rotation.y = Math.PI / 2
     const headMat = new MeshStandardMaterial({ color: 0x111111, roughness: 0.6 })
-    const head = new Mesh(new CylinderGeometry(0.4, 0.4, 1.7, 10), headMat)
-    head.position.y = 5.75
-    mast.add(head)
+    const headBox = new Mesh(new BoxGeometry(0.72, 1.85, 0.34), headMat)
+    headBox.position.y = 5.75
+    head.add(headBox)
 
     const red = lampMaterial(0xff2222)
     const yellow = lampMaterial(0xffcc00)
     const green = lampMaterial(0x22ff44)
     this.lamps.set(signal.id, { red, yellow, green })
 
-    mast.add(makeLamp(green, 5.25))
-    mast.add(makeLamp(yellow, 5.75))
-    mast.add(makeLamp(red, 6.25))
+    head.add(makeLamp(green, 5.25))
+    head.add(makeLamp(yellow, 5.75))
+    head.add(makeLamp(red, 6.25))
+    mast.add(head)
 
     this.place(mast, signal.distance, track)
     return mast
@@ -80,7 +83,8 @@ export class SignalMast {
     const tangent = track.curve.getTangentAt(u, new Vector3())
     const right = new Vector3().crossVectors(tangent, UP).normalize()
     group.position.copy(trackCenter).addScaledVector(right, SIGNAL_OFFSET)
-    group.lookAt(trackCenter)
+    // Align with the track, then the lamp head rotates 90° toward the line.
+    group.lookAt(group.position.clone().add(tangent))
   }
 
   /** Refresh lamp emissive levels from current aspects. */
@@ -98,7 +102,7 @@ function lampMaterial(color: number): MeshStandardMaterial {
 
 function makeLamp(material: MeshStandardMaterial, y: number): Mesh {
   const mesh = new Mesh(new SphereGeometry(0.18, 12, 8), material)
-  mesh.position.set(0, y, 0.42)
+  mesh.position.set(0, y, 0.22)
   return mesh
 }
 

@@ -1,6 +1,6 @@
 {
   "locomotives": ["br218", "mr08", "type12"],
-  "routes": ["valley"],
+  "routes": ["valley", "coastal", "highland", "industrial", "meadow", "canyon"],
   "defaults": {
     "locomotive": "br218",
     "route": "valley"

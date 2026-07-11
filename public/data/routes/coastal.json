@@ -1,0 +1,42 @@
+{
+  "id": "coastal",
+  "name": "Coastal Main Line",
+  "trailingMassTonnes": 420,
+  "trailingLengthMetres": 196,
+  "points": [
+    { "x": 0, "y": 0, "z": 0 },
+    { "x": -30, "y": 1, "z": 500 },
+    { "x": -80, "y": 2, "z": 1000 },
+    { "x": -120, "y": 3, "z": 1500 },
+    { "x": -140, "y": 2, "z": 2000 },
+    { "x": -130, "y": 1, "z": 2500 },
+    { "x": -90, "y": 0, "z": 3000 },
+    { "x": -40, "y": 0, "z": 3500 },
+    { "x": 20, "y": 1, "z": 4000 },
+    { "x": 80, "y": 2, "z": 4500 },
+    { "x": 110, "y": 1, "z": 5000 },
+    { "x": 90, "y": 0, "z": 5500 }
+  ],
+  "stations": [
+    { "id": "harbour", "name": "Harbour Junction", "distance": 1400, "platformLength": 200 },
+    { "id": "cliffside", "name": "Cliffside Halt", "distance": 3200, "platformLength": 180 },
+    { "id": "northpier", "name": "North Pier Terminus", "distance": 5300, "platformLength": 220 }
+  ],
+  "speedLimits": [
+    { "distance": 0, "limitKmh": 100 },
+    { "distance": 1200, "limitKmh": 70 },
+    { "distance": 2200, "limitKmh": 85 },
+    { "distance": 3400, "limitKmh": 60 },
+    { "distance": 4600, "limitKmh": 90 },
+    { "distance": 5100, "limitKmh": 45 }
+  ],
+  "signals": [
+    { "id": "c1", "distance": 600 },
+    { "id": "c2", "distance": 1300 },
+    { "id": "c3", "distance": 2100 },
+    { "id": "c4", "distance": 2900 },
+    { "id": "c5", "distance": 3700 },
+    { "id": "c6", "distance": 4500 },
+    { "id": "c7", "distance": 5200 }
+  ]
+}

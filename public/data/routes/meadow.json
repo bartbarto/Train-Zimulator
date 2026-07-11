@@ -1,0 +1,40 @@
+{
+  "id": "meadow",
+  "name": "Meadow Branch",
+  "trailingMassTonnes": 420,
+  "trailingLengthMetres": 196,
+  "points": [
+    { "x": 0, "y": 0, "z": 0 },
+    { "x": -40, "y": 1, "z": 500 },
+    { "x": -100, "y": 2, "z": 1000 },
+    { "x": -160, "y": 3, "z": 1500 },
+    { "x": -200, "y": 2, "z": 2000 },
+    { "x": -210, "y": 1, "z": 2500 },
+    { "x": -180, "y": 0, "z": 3000 },
+    { "x": -120, "y": 0, "z": 3500 },
+    { "x": -50, "y": 1, "z": 4000 },
+    { "x": 30, "y": 2, "z": 4500 },
+    { "x": 100, "y": 1, "z": 5000 }
+  ],
+  "stations": [
+    { "id": "oakham", "name": "Oakham", "distance": 1300, "platformLength": 200 },
+    { "id": "brookfield", "name": "Brookfield Halt", "distance": 2700, "platformLength": 180 },
+    { "id": "meadowend", "name": "Meadow End", "distance": 4900, "platformLength": 220 }
+  ],
+  "speedLimits": [
+    { "distance": 0, "limitKmh": 85 },
+    { "distance": 1100, "limitKmh": 65 },
+    { "distance": 2200, "limitKmh": 75 },
+    { "distance": 3200, "limitKmh": 80 },
+    { "distance": 4200, "limitKmh": 60 },
+    { "distance": 4700, "limitKmh": 45 }
+  ],
+  "signals": [
+    { "id": "m1", "distance": 550 },
+    { "id": "m2", "distance": 1250 },
+    { "id": "m3", "distance": 2000 },
+    { "id": "m4", "distance": 2800 },
+    { "id": "m5", "distance": 3600 },
+    { "id": "m6", "distance": 4400 }
+  ]
+}
