@@ -1,8 +1,4 @@
-export interface LocomotiveOption {
-  id: string
-  name: string
-  type: string
-}
+export { type LocomotiveOption } from '@/core/ContentCatalog'
 
 const STORAGE_KEY = 'trainsim.locomotive.v1'
 

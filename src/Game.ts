@@ -4,7 +4,14 @@ import { Renderer } from '@/core/Renderer'
 import { SceneManager } from '@/core/SceneManager'
 import { AssetManager } from '@/core/AssetManager'
 import { ContentLoader } from '@/core/ContentLoader'
-import { loadPreferredLocomotive, savePreferredLocomotive, type LocomotiveOption } from '@/core/LocomotivePreference'
+import {
+  locomotiveToOption,
+  routeToOption,
+  type LocomotiveOption,
+  type RouteOption,
+} from '@/core/ContentCatalog'
+import { loadPreferredLocomotive, savePreferredLocomotive } from '@/core/LocomotivePreference'
+import { loadPreferredRoute, savePreferredRoute } from '@/core/RoutePreference'
 import { InputManager } from '@/core/input/InputManager'
 import { GameLoop } from '@/core/GameLoop'
 import type { SettingsManager } from '@/core/SettingsManager'
@@ -26,6 +33,7 @@ export interface GameCallbacks {
   onPauseChanged: (paused: boolean) => void
   onHudChanged: (visible: boolean) => void
   onDebugChanged: (visible: boolean) => void
+  onContentReady: (locomotives: LocomotiveOption[], routes: RouteOption[], locomotiveId: string, routeId: string) => void
   onLocomotivesReady: (options: LocomotiveOption[], currentId: string) => void
   onLocomotiveChanged: (id: string) => void
 }
@@ -60,11 +68,14 @@ export class Game {
   private debugVisible = false
   private snapshotTimer = 0
   private locomotiveId = 'br218'
+  private routeId = 'valley'
   private locomotiveSpec!: LocomotiveSpec
   private content!: ContentLoader
   private routeSpec!: RouteSpec
   private locomotiveOptions: LocomotiveOption[] = []
+  private routeOptions: RouteOption[] = []
   private switching = false
+  private sessionReady = false
 
   constructor(canvas: HTMLCanvasElement, settings: SettingsManager, callbacks: GameCallbacks) {
     this.canvas = canvas
@@ -73,16 +84,50 @@ export class Game {
     this.renderer = new Renderer(canvas, settings.settings.graphics)
   }
 
-  async init(): Promise<void> {
+  /** Load content catalog and core engine shell; session starts via {@link startSession}. */
+  async prepare(): Promise<void> {
     this.assets.onProgress = (loaded, total) => this.callbacks.onProgress(total ? loaded / total : 1)
 
     this.content = new ContentLoader(this.assets)
     const manifest = await this.content.loadManifest()
-    this.routeSpec = await this.content.loadRoute(manifest.defaults.route)
     this.locomotiveOptions = await this.loadLocomotiveCatalog(manifest.locomotives)
+    this.routeOptions = await this.loadRouteCatalog(manifest.routes)
 
-    const startId = this.resolveStartLocomotive(manifest.defaults.locomotive)
-    await this.applyLocomotive(startId)
+    this.locomotiveId = this.resolveStartLocomotive(manifest.defaults.locomotive)
+    this.routeId = this.resolveStartRoute(manifest.defaults.route)
+
+    this.input.attach(this.canvas)
+    this.input.setGamepadConfig(this.settings.settings.gamepad)
+    this.input.setKeyBindings(this.settings.settings.keyBindings)
+
+    this.settings.onChange(() => this.applySettings())
+    window.addEventListener('resize', this.onResize)
+    window.addEventListener('pointerdown', this.resumeAudioOnce, { once: true })
+
+    this.loop = new GameLoop({
+      fixedUpdate: (dt) => this.fixedUpdate(dt),
+      render: (frameDt) => this.render(frameDt),
+    })
+
+    this.callbacks.onContentReady(this.locomotiveOptions, this.routeOptions, this.locomotiveId, this.routeId)
+    this.callbacks.onProgress(1)
+  }
+
+  /** Build the world and begin driving with the chosen consist and route. */
+  async startSession(locomotiveId: string, routeId: string): Promise<void> {
+    if (!this.locomotiveOptions.some((o) => o.id === locomotiveId)) {
+      throw new Error(`Unknown locomotive: ${locomotiveId}`)
+    }
+    if (!this.routeOptions.some((o) => o.id === routeId)) {
+      throw new Error(`Unknown route: ${routeId}`)
+    }
+
+    this.teardownSession()
+
+    this.routeId = routeId
+    this.routeSpec = await this.content.loadRoute(routeId)
+    await this.applyLocomotive(locomotiveId)
+
     this.world = new World(this.sim.route, this.routeSpec)
     this.scene.scene.add(this.world.group)
 
@@ -106,31 +151,51 @@ export class Game {
     })
 
     this.sound = new SoundController(this.settings.settings.audio)
-    this.input.attach(this.canvas)
-    this.input.setGamepadConfig(this.settings.settings.gamepad)
     this.renderer.setupPostProcessing(this.scene.scene, this.cab.camera.camera)
+    this.applySettings()
 
-    this.settings.onChange(() => this.applySettings())
-    window.addEventListener('resize', this.onResize)
-    window.addEventListener('pointerdown', this.resumeAudioOnce, { once: true })
-
-    this.loop = new GameLoop({
-      fixedUpdate: (dt) => this.fixedUpdate(dt),
-      render: (frameDt) => this.render(frameDt),
-    })
-
+    savePreferredLocomotive(locomotiveId)
+    savePreferredRoute(routeId)
+    this.sessionReady = true
     this.callbacks.onLocomotivesReady(this.locomotiveOptions, this.locomotiveId)
-    this.callbacks.onProgress(1)
   }
 
-  private resolveStartLocomotive(defaultId: string): string {
-    const preferred = loadPreferredLocomotive(defaultId)
+  private teardownSession(): void {
+    if (this.world) {
+      this.scene.scene.remove(this.world.group)
+      this.world = undefined!
+    }
+    if (this.cab) {
+      this.scene.scene.remove(this.cab.root)
+      this.cab.platformMonitor.dispose()
+      this.cab = undefined!
+    }
+    this.sound?.dispose()
+    this.sound = undefined!
+    this.cabController = undefined!
+    this.sim = undefined!
+    this.sessionReady = false
+    this.paused = false
+  }
+
+  resolveStartLocomotive(defaultId: string, override?: string | null): string {
+    const preferred = override ?? loadPreferredLocomotive(defaultId)
     return this.locomotiveOptions.some((o) => o.id === preferred) ? preferred : defaultId
+  }
+
+  resolveStartRoute(defaultId: string, override?: string | null): string {
+    const preferred = override ?? loadPreferredRoute(defaultId)
+    return this.routeOptions.some((o) => o.id === preferred) ? preferred : defaultId
   }
 
   private async loadLocomotiveCatalog(ids: string[]): Promise<LocomotiveOption[]> {
     const specs = await Promise.all(ids.map((id) => this.content.loadLocomotive(id)))
-    return specs.map((s) => ({ id: s.id, name: s.name, type: s.type }))
+    return specs.map(locomotiveToOption)
+  }
+
+  private async loadRouteCatalog(ids: string[]): Promise<RouteOption[]> {
+    const specs = await Promise.all(ids.map((id) => this.content.loadRoute(id)))
+    return specs.map(routeToOption)
   }
 
   private async applyLocomotive(id: string): Promise<void> {
@@ -148,18 +213,18 @@ export class Game {
       roofColor: loco.roofColor,
       windowFrameColor: loco.windowFrameColor,
     })
-    savePreferredLocomotive(id)
   }
 
   /** Swap locomotive at the start of the route. Must be called while paused. */
   async switchLocomotive(id: string): Promise<boolean> {
-    if (this.switching || id === this.locomotiveId) return false
+    if (!this.sessionReady || this.switching || id === this.locomotiveId) return false
     if (!this.locomotiveOptions.some((o) => o.id === id)) return false
 
     this.switching = true
     try {
       await this.applyLocomotive(id)
       this.cabController.setControls(this.sim.train.controls)
+      savePreferredLocomotive(id)
       this.callbacks.onLocomotiveChanged(id)
       return true
     } finally {
@@ -171,8 +236,16 @@ export class Game {
     return this.locomotiveId
   }
 
+  getRouteId(): string {
+    return this.routeId
+  }
+
   getLocomotiveOptions(): readonly LocomotiveOption[] {
     return this.locomotiveOptions
+  }
+
+  getRouteOptions(): readonly RouteOption[] {
+    return this.routeOptions
   }
 
   /** Train starts ready to drive — only the power lever is needed. */
@@ -190,11 +263,13 @@ export class Game {
   }
 
   private fixedUpdate(dt: number): void {
-    if (this.paused) return
+    if (!this.sessionReady || this.paused) return
     this.sim.update(dt)
   }
 
   private render(frameDt: number): void {
+    if (!this.sessionReady) return
+
     const snapshot = this.input.update(frameDt)
     if (!this.paused) this.cabController.update(snapshot, frameDt)
 
@@ -253,6 +328,7 @@ export class Game {
   }
 
   setPaused(value: boolean): void {
+    if (!this.sessionReady) return
     this.paused = value
     if (value) this.input.mouse.releaseLook()
     this.callbacks.onPauseChanged(value)
@@ -281,10 +357,12 @@ export class Game {
   }
 
   setWeather(kind: WeatherKind): void {
+    if (!this.sessionReady) return
     this.sim.environment.setWeather(kind)
   }
 
   setTimeOfDay(seconds: number): void {
+    if (!this.sessionReady) return
     this.sim.environment.setTimeOfDay(seconds)
   }
 
@@ -293,13 +371,14 @@ export class Game {
     this.renderer.setBloom(s.graphics.bloom)
     this.renderer.setShadows(s.graphics.shadows)
     this.renderer.setExposure(s.graphics.exposure)
-    this.cab.camera.setConfig(s.camera)
+    this.cab?.camera.setConfig(s.camera)
     this.input.setGamepadConfig(s.gamepad)
     this.input.setKeyBindings(s.keyBindings)
-    this.sound.applySettings(s.audio)
+    this.sound?.applySettings(s.audio)
   }
 
   save(slot: string): void {
+    if (!this.sessionReady) return
     const env = this.sim.environment
     this.saves.save(slot, {
       locomotiveId: this.locomotiveId,
@@ -313,6 +392,7 @@ export class Game {
   }
 
   load(slot: string): boolean {
+    if (!this.sessionReady) return false
     const state = this.saves.load(slot)
     if (!state) return false
     this.sim.train.restore(state.distance, state.speedMs)
@@ -323,19 +403,18 @@ export class Game {
 
   private readonly onResize = (): void => {
     this.renderer.resize()
-    this.cab.camera.setAspect(this.renderer.aspect)
+    this.cab?.camera.setAspect(this.renderer.aspect)
   }
 
   private readonly resumeAudioOnce = (): void => {
-    void this.sound.resume()
+    void this.sound?.resume()
   }
 
   dispose(): void {
     this.loop?.stop()
     window.removeEventListener('resize', this.onResize)
     this.input.detach(this.canvas)
-    this.sound?.dispose()
-    this.cab?.platformMonitor.dispose()
+    this.teardownSession()
     this.renderer.dispose()
   }
 }

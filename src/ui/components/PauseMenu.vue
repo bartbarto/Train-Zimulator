@@ -130,8 +130,7 @@ async function switchLoco(id: string) {
 .scrim {
   position: absolute;
   inset: 0;
-  background: rgba(2, 4, 8, 0.55);
-  backdrop-filter: blur(4px);
+  background: var(--scrim);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -140,42 +139,86 @@ async function switchLoco(id: string) {
   width: min(820px, 92vw);
   max-height: 88vh;
   overflow: auto;
-  padding: 1.4rem 1.6rem;
+  padding: 0;
+  color: var(--text);
 }
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  padding: 1rem 1.4rem;
+  border-bottom: 3px solid var(--border);
+  background: var(--nmbs-blue-dark);
+  color: var(--text-light);
 }
-h2 { letter-spacing: 0.1rem; }
+header button.primary {
+  background: var(--nmbs-red);
+  color: var(--text-light);
+}
+header button.primary:hover {
+  background: var(--nmbs-red-dark);
+}
+h2 {
+  letter-spacing: 0.2rem;
+  font-size: 1.4rem;
+}
 .cols {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.2rem;
+  gap: 0;
+}
+section {
+  padding: 1rem 1.2rem;
+  border-right: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
 }
 section h3 {
-  color: var(--accent);
-  font-size: 0.85rem;
-  letter-spacing: 0.1rem;
-  margin-bottom: 0.6rem;
+  color: var(--brand-blue);
+  font-size: 0.95rem;
+  letter-spacing: 0.16rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 2px solid var(--border);
 }
 label {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.85rem;
-  margin-bottom: 0.5rem;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  margin-bottom: 0.55rem;
   color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 .slider { flex-wrap: wrap; }
-input[type='range'] { flex: 1; accent-color: var(--accent); }
 .weather { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
-.weather button { text-transform: capitalize; padding: 0.3rem 0.6rem; }
-.loco-list { display: flex; flex-direction: column; gap: 0.35rem; }
-.loco-list button { text-align: left; font-size: 0.82rem; }
-.hint { color: var(--muted); font-size: 0.75rem; margin-bottom: 0.5rem; }
+.weather button { text-transform: capitalize; padding: 0.35rem 0.65rem; font-size: 0.85rem; }
+.loco-list { display: flex; flex-direction: column; gap: 0.4rem; }
+.loco-list button {
+  text-align: left;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+.hint {
+  font-family: 'Space Mono', monospace;
+  color: var(--muted);
+  font-size: 0.68rem;
+  margin-bottom: 0.5rem;
+}
 .row { display: flex; gap: 0.5rem; }
-.flash { color: var(--ok); font-size: 0.8rem; }
-footer { margin-top: 1.2rem; color: var(--muted); font-size: 0.75rem; }
+.flash { color: var(--ok); font-family: 'Space Mono', monospace; font-size: 0.75rem; font-weight: 700; }
+footer {
+  margin: 0;
+  padding: 0.85rem 1.2rem;
+  border-top: 3px solid var(--border);
+  background: color-mix(in srgb, var(--highlight) 25%, var(--nmbs-white));
+  font-family: 'Space Mono', monospace;
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
 </style>

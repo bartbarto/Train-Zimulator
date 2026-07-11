@@ -1,15 +1,22 @@
 import {
+  BoxGeometry,
   CircleGeometry,
   Group,
   Mesh,
   MeshStandardMaterial,
-  PlaneGeometry,
   Object3D,
+  PlaneGeometry,
+  RingGeometry,
 } from 'three'
 import { clamp, lerp } from '@/engine/math'
 
 const NEEDLE_MIN = -Math.PI * 1.35 // sweep start (radians)
 const NEEDLE_MAX = -Math.PI * 2.7 // sweep start (radians)
+
+const FACE = 0xb0aaa4
+const INK = 0x003875
+const ACCENT = 0x8c1d40
+const MOUNT = 0x969088
 
 /**
  * Physical gauge dials mounted on the console: a speedometer and a brake-pipe
@@ -24,34 +31,64 @@ export class Gauges {
   private brakeAngle = NEEDLE_MIN
 
   constructor() {
-    this.speedNeedle = this.buildDial(-0.32, 0xbcbcbc)
-    this.brakeNeedle = this.buildDial(0.32, 0xbcbcbc)
+    this.speedNeedle = this.buildDial(-0.32)
+    this.brakeNeedle = this.buildDial(0.32)
   }
 
-  private buildDial(x: number, color: number): Object3D {
+  private buildDial(x: number): Object3D {
     const dial = new Group()
+
+    const mountMat = new MeshStandardMaterial({ color: MOUNT, roughness: 0.95, metalness: 0.05 })
+    const mount = new Mesh(new BoxGeometry(0.34, 0.34, 0.018), mountMat)
+    mount.position.z = -0.01
+
     const faceMat = new MeshStandardMaterial({
-      color,
-      roughness: 0.6,
-      emissive: 0x0a0c10,
-      emissiveIntensity: 0.4,
+      color: FACE,
+      roughness: 0.94,
+      metalness: 0,
+      emissive: 0x3a3834,
+      emissiveIntensity: 0.12,
       polygonOffset: true,
       polygonOffsetFactor: 1,
       polygonOffsetUnits: 1,
     })
-    const face = new Mesh(new CircleGeometry(0.13, 32), faceMat)
-    face.position.z = -0.004
+    const face = new Mesh(new CircleGeometry(0.11, 32), faceMat)
+    face.position.z = 0.001
+
+    const bezelMat = new MeshStandardMaterial({ color: INK, roughness: 0.75, metalness: 0.25 })
+    const bezel = new Mesh(new RingGeometry(0.102, 0.125, 32), bezelMat)
+    bezel.position.z = 0.003
+
+    const tickMat = new MeshStandardMaterial({ color: INK, roughness: 0.9, metalness: 0 })
+    for (let i = 0; i <= 10; i++) {
+      const t = i / 10
+      const angle = lerp(NEEDLE_MIN, NEEDLE_MAX, t)
+      const major = i % 5 === 0
+      const tick = new Mesh(
+        new BoxGeometry(major ? 0.012 : 0.007, major ? 0.028 : 0.018, 0.003),
+        tickMat,
+      )
+      const r = 0.088
+      tick.position.set(Math.sin(-angle) * r, Math.cos(-angle) * r, 0.006)
+      tick.rotation.z = angle + Math.PI / 2
+      dial.add(tick)
+    }
+
     const needle = new Mesh(
-      new PlaneGeometry(0.012, 0.11),
-      new MeshStandardMaterial({ color: 0xffcc44, emissive: 0xffcc44, emissiveIntensity: 1.2 }),
+      new PlaneGeometry(0.013, 0.092),
+      new MeshStandardMaterial({ color: ACCENT, roughness: 0.55, metalness: 0.15 }),
     )
-    needle.position.set(0, 0.045, 0.006)
+    needle.position.set(0, 0.038, 0.008)
     needle.renderOrder = 1
+
+    const hub = new Mesh(new CircleGeometry(0.016, 12), bezelMat)
+    hub.position.z = 0.009
+    hub.renderOrder = 2
+
     const pivot = new Group()
     pivot.add(needle)
-    dial.add(face, pivot)
-    // Forward of the console lip so the face does not coplanar-fight the desk.
-    dial.position.set(x, 1.34, -0.82)
+    dial.add(mount, face, bezel, pivot, hub)
+    dial.position.set(x, 1.4, -0.82)
     this.group.add(dial)
     return pivot
   }

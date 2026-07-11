@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { shallowRef } from 'vue'
 import { createEmptySnapshot, type UiSnapshot } from '@/ui/types'
-import type { LocomotiveOption } from '@/core/LocomotivePreference'
+import type { LocomotiveOption, RouteOption } from '@/core/ContentCatalog'
 
 export type GamePhase = 'loading' | 'menu' | 'playing' | 'paused'
 
@@ -12,7 +12,9 @@ export const useSimStore = defineStore('sim', () => {
   const showHud = shallowRef(true)
   const showDebug = shallowRef(false)
   const locomotiveId = shallowRef('')
+  const routeId = shallowRef('')
   const locomotiveOptions = shallowRef<LocomotiveOption[]>([])
+  const routeOptions = shallowRef<RouteOption[]>([])
   const locomotiveSwitching = shallowRef(false)
 
   function setSnapshot(next: UiSnapshot): void {
@@ -27,6 +29,18 @@ export const useSimStore = defineStore('sim', () => {
     loadProgress.value = value
   }
 
+  function setContent(
+    locomotives: LocomotiveOption[],
+    routes: RouteOption[],
+    selectedLocoId: string,
+    selectedRouteId: string,
+  ): void {
+    locomotiveOptions.value = locomotives
+    routeOptions.value = routes
+    locomotiveId.value = selectedLocoId
+    routeId.value = selectedRouteId
+  }
+
   function setLocomotives(options: LocomotiveOption[], currentId: string): void {
     locomotiveOptions.value = options
     locomotiveId.value = currentId
@@ -34,6 +48,10 @@ export const useSimStore = defineStore('sim', () => {
 
   function setLocomotiveId(id: string): void {
     locomotiveId.value = id
+  }
+
+  function setRouteId(id: string): void {
+    routeId.value = id
   }
 
   function setLocomotiveSwitching(value: boolean): void {
@@ -47,13 +65,17 @@ export const useSimStore = defineStore('sim', () => {
     showHud,
     showDebug,
     locomotiveId,
+    routeId,
     locomotiveOptions,
+    routeOptions,
     locomotiveSwitching,
     setSnapshot,
     setPhase,
     setLoadProgress,
+    setContent,
     setLocomotives,
     setLocomotiveId,
+    setRouteId,
     setLocomotiveSwitching,
   }
 })

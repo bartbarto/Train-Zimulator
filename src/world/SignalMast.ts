@@ -1,4 +1,5 @@
 import {
+  BoxGeometry,
   CylinderGeometry,
   Group,
   Mesh,
@@ -38,14 +39,26 @@ export class SignalMast {
   private buildMast(signal: SignalState, track: Track): Group {
     const mast = new Group()
     const postMat = new MeshStandardMaterial({ color: 0x2b2b2b, metalness: 0.4, roughness: 0.7 })
+    const baseMat = new MeshStandardMaterial({ color: 0x4a4a48, roughness: 0.95 })
+
+    const slab = new Mesh(new BoxGeometry(1.4, 0.14, 1.1), baseMat)
+    slab.position.y = 0.07
+    slab.receiveShadow = true
+    mast.add(slab)
+
+    const footing = new Mesh(new CylinderGeometry(0.42, 0.52, 0.28, 8), baseMat)
+    footing.position.y = 0.21
+    footing.receiveShadow = true
+    mast.add(footing)
+
     const post = new Mesh(new CylinderGeometry(0.12, 0.14, 5, 8), postMat)
-    post.position.y = 2.5
+    post.position.y = 2.85
     post.castShadow = true
     mast.add(post)
 
     const headMat = new MeshStandardMaterial({ color: 0x111111, roughness: 0.6 })
     const head = new Mesh(new CylinderGeometry(0.4, 0.4, 1.7, 10), headMat)
-    head.position.y = 5.4
+    head.position.y = 5.75
     mast.add(head)
 
     const red = lampMaterial(0xff2222)
@@ -53,9 +66,9 @@ export class SignalMast {
     const green = lampMaterial(0x22ff44)
     this.lamps.set(signal.id, { red, yellow, green })
 
-    mast.add(makeLamp(green, 4.9))
-    mast.add(makeLamp(yellow, 5.4))
-    mast.add(makeLamp(red, 5.9))
+    mast.add(makeLamp(green, 5.25))
+    mast.add(makeLamp(yellow, 5.75))
+    mast.add(makeLamp(red, 6.25))
 
     this.place(mast, signal.distance, track)
     return mast
@@ -63,10 +76,11 @@ export class SignalMast {
 
   private place(group: Group, distance: number, track: Track): void {
     const u = distance / track.length
-    const pos = track.curve.getPointAt(u, new Vector3())
+    const trackCenter = track.curve.getPointAt(u, new Vector3())
     const tangent = track.curve.getTangentAt(u, new Vector3())
     const right = new Vector3().crossVectors(tangent, UP).normalize()
-    group.position.copy(pos.addScaledVector(right, SIGNAL_OFFSET))
+    group.position.copy(trackCenter).addScaledVector(right, SIGNAL_OFFSET)
+    group.lookAt(trackCenter)
   }
 
   /** Refresh lamp emissive levels from current aspects. */
