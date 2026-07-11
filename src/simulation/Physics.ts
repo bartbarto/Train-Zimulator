@@ -59,28 +59,46 @@ export class Physics {
     }
 
     const v = this.speed
-    const speedSign = Math.abs(v) < STANDSTILL_SPEED ? 0 : Math.sign(v)
+    const atStandstill = Math.abs(v) < STANDSTILL_SPEED
 
     // Davis resistance always opposes motion.
     const r = input.resistance
     const resistanceMag = r.a + r.b * Math.abs(v) + r.c * v * v
-    const resistanceForce = -speedSign * resistanceMag
 
     // Gradient pulls the train downhill regardless of direction.
     const gradientForce = -input.massKg * GRAVITY * Math.sin(input.gradientRad)
 
-    // Friction + dynamic braking oppose current motion (or resist starting).
     const brakeMag = input.brakeForceN + input.dynamicBrakeForceN
-    const brakeForce = -speedSign * brakeMag
+    const holdMag = brakeMag + resistanceMag
+    const drivingForce = demandedTe + gradientForce
 
-    const netForce = demandedTe + resistanceForce + gradientForce + brakeForce
+    if (atStandstill) {
+      const tendency = Math.abs(drivingForce)
+      if (tendency <= holdMag) {
+        this.speed = 0
+        this.acceleration = 0
+        return
+      }
+      // Static hold overcome — resistive forces oppose the direction of breakaway.
+      const moveSign = Math.sign(drivingForce)
+      const netForce = drivingForce - moveSign * holdMag
+      this.acceleration = netForce / input.massKg
+      this.speed = v + this.acceleration * dt
+      this.distance += this.speed * dt
+      return
+    }
+
+    const speedSign = Math.sign(v)
+    const resistanceForce = -speedSign * resistanceMag
+    const brakeForce = -speedSign * brakeMag
+    const netForce = drivingForce + resistanceForce + brakeForce
     this.acceleration = netForce / input.massKg
 
     const newSpeed = v + this.acceleration * dt
 
     // Braking/resistance must not reverse the train through zero.
-    if (speedSign !== 0 && Math.sign(newSpeed) !== speedSign && demandedTe * dir <= 0) {
-      const heldByBrakes = brakeMag + resistanceMag >= Math.abs(demandedTe + gradientForce)
+    if (Math.sign(newSpeed) !== speedSign && demandedTe * dir <= 0) {
+      const heldByBrakes = holdMag >= Math.abs(drivingForce)
       this.speed = heldByBrakes ? 0 : newSpeed
     } else {
       this.speed = newSpeed
