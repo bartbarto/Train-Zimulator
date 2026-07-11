@@ -1,5 +1,6 @@
 import { KMH_TO_MS, MS_TO_KMH } from '@/engine/constants'
 import { clamp01 } from '@/engine/math'
+import { t } from '@/i18n'
 import type { RouteProgress } from './RouteManager'
 import type { StationServiceState, StationTractionPolicy } from './StationService'
 import { getStopZoneStart, isInStopZone } from './stationZone'
@@ -63,7 +64,7 @@ export function computeAutoBrake(
       assists.push({
         ms: targetKmh * KMH_TO_MS,
         reason: 'signal',
-        label: d < DANGER_FULL_BRAKE_DISTANCE_M ? 'Stop signal' : 'Approach stop signal',
+        label: d < DANGER_FULL_BRAKE_DISTANCE_M ? t('autoBrake.stopSignal') : t('autoBrake.approachStopSignal'),
         strength: d < DANGER_FULL_BRAKE_DISTANCE_M ? 0.85 : 0.45,
       })
     }
@@ -85,7 +86,7 @@ export function computeAutoBrake(
       assists.push({
         ms: entryMs,
         reason: 'station',
-        label: 'Ease into station',
+        label: t('autoBrake.easeIntoStation'),
         strength: 0.35,
       })
     }

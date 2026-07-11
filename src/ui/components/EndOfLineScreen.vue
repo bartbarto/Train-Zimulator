@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { formatDuration } from '@/core/SessionScore'
+import { useI18n } from '@/stores/i18nStore'
 import type { SessionCompletion } from '@/ui/types'
 
 const props = defineProps<{ completion: SessionCompletion }>()
 const emit = defineEmits<{ menu: [] }>()
+const { t } = useI18n()
 
 const showOffences = ref(false)
 const r = computed(() => props.completion.result)
@@ -16,10 +18,10 @@ const stationsLabel = computed(() => `${r.value.stationsServed} / ${r.value.stat
 const distanceLabel = computed(() => `${(r.value.distanceMetres / 1000).toFixed(1)} km`)
 const rating = computed(() => {
   const missed = r.value.stationsTotal - r.value.stationsServed
-  if (r.value.offences === 0 && missed === 0) return 'Excellent run'
-  if (r.value.offences <= 2 && missed === 0) return 'Good run'
-  if (missed > 0) return 'Incomplete service'
-  return 'Room for improvement'
+  if (r.value.offences === 0 && missed === 0) return t('endOfLine.excellent')
+  if (r.value.offences <= 2 && missed === 0) return t('endOfLine.good')
+  if (missed > 0) return t('endOfLine.incomplete')
+  return t('endOfLine.improve')
 })
 
 function formatOffenceTime(seconds: number): string {
@@ -32,28 +34,28 @@ function formatOffenceTime(seconds: number): string {
     <div class="screen menu-surface">
       <header class="menu-header">
         <div>
-          <h2>End of line</h2>
+          <h2>{{ t('endOfLine.title') }}</h2>
           <p class="route">{{ r.routeName }}</p>
         </div>
         <span class="rating">{{ rating }}</span>
       </header>
 
       <div v-if="record.isNewBestScore || record.isNewBestTime" class="records">
-        <span v-if="record.isNewBestScore" class="badge">New best score</span>
-        <span v-if="record.isNewBestTime" class="badge">New best time</span>
+        <span v-if="record.isNewBestScore" class="badge">{{ t('endOfLine.newBestScore') }}</span>
+        <span v-if="record.isNewBestTime" class="badge">{{ t('endOfLine.newBestTime') }}</span>
       </div>
 
       <div class="stats">
         <div class="stat">
-          <span class="label">Score</span>
+          <span class="label">{{ t('endOfLine.score') }}</span>
           <span class="value mono">{{ score.toLocaleString() }}</span>
         </div>
         <div class="stat">
-          <span class="label">Time taken</span>
+          <span class="label">{{ t('endOfLine.timeTaken') }}</span>
           <span class="value mono">{{ timeLabel }}</span>
         </div>
         <div class="stat offences-row">
-          <span class="label">Offences</span>
+          <span class="label">{{ t('endOfLine.offences') }}</span>
           <div class="offences-summary">
             <span class="value mono" :class="{ bad: r.offences > 0 }">{{ r.offences }}</span>
             <button
@@ -61,7 +63,7 @@ function formatOffenceTime(seconds: number): string {
               class="view-offences"
               @click="showOffences = !showOffences"
             >
-              {{ showOffences ? 'Hide details' : 'View details' }}
+              {{ showOffences ? t('endOfLine.hideDetails') : t('endOfLine.viewDetails') }}
             </button>
           </div>
         </div>
@@ -72,21 +74,21 @@ function formatOffenceTime(seconds: number): string {
           </li>
         </ul>
         <div class="stat">
-          <span class="label">Passengers transported</span>
+          <span class="label">{{ t('endOfLine.passengers') }}</span>
           <span class="value mono">{{ r.passengersTransported }}</span>
         </div>
         <div class="stat">
-          <span class="label">Stations served</span>
+          <span class="label">{{ t('endOfLine.stationsServed') }}</span>
           <span class="value mono" :class="{ bad: r.stationsServed < r.stationsTotal }">{{ stationsLabel }}</span>
         </div>
         <div class="stat">
-          <span class="label">Distance traveled</span>
+          <span class="label">{{ t('endOfLine.distance') }}</span>
           <span class="value mono">{{ distanceLabel }}</span>
         </div>
       </div>
 
       <footer>
-        <button class="primary" @click="emit('menu')">Back to menu</button>
+        <button class="primary" @click="emit('menu')">{{ t('endOfLine.backToMenu') }}</button>
       </footer>
     </div>
   </div>

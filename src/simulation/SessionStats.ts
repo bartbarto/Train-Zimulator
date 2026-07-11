@@ -1,4 +1,5 @@
 import { MS_TO_KMH } from '@/engine/constants'
+import { t } from '@/i18n'
 
 export type OffenceKind = 'overspeed' | 'stationOvershoot'
 
@@ -23,7 +24,7 @@ export interface SessionResult {
 export interface SessionStatsContext {
   speedMs: number
   speedLimitKmh: number
-  stationMessage: string
+  stationOvershot: boolean
   stationId: string | null
   stationName: string | null
 }
@@ -98,7 +99,10 @@ export class SessionStats {
         const speedKmh = Math.round(Math.abs(ctx.speedMs) * MS_TO_KMH)
         this.recordOffence(
           'overspeed',
-          `Exceeded ${Math.round(ctx.speedLimitKmh)} km/h limit at ${speedKmh} km/h`,
+          t('offence.overspeed', {
+            limit: Math.round(ctx.speedLimitKmh),
+            speed: speedKmh,
+          }),
         )
       }
     } else {
@@ -108,10 +112,10 @@ export class SessionStats {
   }
 
   private trackStationOvershoot(ctx: SessionStatsContext): void {
-    if (!ctx.stationId || !ctx.stationMessage.startsWith('Overshot')) return
+    if (!ctx.stationId || !ctx.stationOvershot) return
     if (this.overshotStations.has(ctx.stationId)) return
     this.overshotStations.add(ctx.stationId)
-    const name = ctx.stationName ?? 'station'
-    this.recordOffence('stationOvershoot', `Overshot ${name} stop zone`)
+    const name = ctx.stationName ?? t('offence.station')
+    this.recordOffence('stationOvershoot', t('offence.stationOvershoot', { name }))
   }
 }

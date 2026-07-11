@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useSimStore } from '@/stores/simStore'
+import { useI18n } from '@/stores/i18nStore'
 import type { Game } from '@/Game'
 
 const props = defineProps<{ game: Game }>()
 
 const store = useSimStore()
 const { locomotiveId, locomotiveOptions, locomotiveSwitching, phase } = storeToRefs(store)
+const { t } = useI18n()
 
 async function onSelect(event: Event): Promise<void> {
   const id = (event.target as HTMLSelectElement).value
@@ -29,14 +31,14 @@ async function onSelect(event: Event): Promise<void> {
 <template>
   <div class="loco-picker panel" :class="{ switching: locomotiveSwitching }">
     <label class="mono">
-      <span class="label">Locomotive</span>
+      <span class="label">{{ t('locoSelector.locomotive') }}</span>
       <select :value="locomotiveId" :disabled="locomotiveSwitching" @change="onSelect">
         <option v-for="loco in locomotiveOptions" :key="loco.id" :value="loco.id">
           {{ loco.name }}
         </option>
       </select>
     </label>
-    <span v-if="locomotiveSwitching" class="status mono">Switching…</span>
+    <span v-if="locomotiveSwitching" class="status mono">{{ t('locoSelector.switching') }}</span>
   </div>
 </template>
 

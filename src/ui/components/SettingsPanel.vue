@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
+import { useI18n } from '@/stores/i18nStore'
 import type { SettingsManager } from '@/core/SettingsManager'
 
 const props = defineProps<{
@@ -8,6 +9,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{ close: [] }>()
+const { t } = useI18n()
 
 const form = reactive({ ...structuredClone(props.settings.settings) })
 
@@ -25,41 +27,41 @@ function apply(): void {
   <div class="scrim" @click.self="emit('close')">
     <div class="menu-surface settings">
       <header class="menu-header">
-        <h2>Settings</h2>
-        <button @click="emit('close')">Close</button>
+        <h2>{{ t('settings.title') }}</h2>
+        <button @click="emit('close')">{{ t('settings.close') }}</button>
       </header>
 
       <div class="cols">
         <section>
-          <h3>Graphics</h3>
-          <label class="check"><input type="checkbox" v-model="form.graphics.bloom" @change="apply" /> Bloom</label>
-          <label class="check"><input type="checkbox" v-model="form.graphics.shadows" @change="apply" /> Shadows</label>
-          <label class="slider">Exposure <input type="range" min="0.4" max="2" step="0.05" v-model.number="form.graphics.exposure" @input="apply" /> {{ form.graphics.exposure.toFixed(2) }}</label>
+          <h3>{{ t('pause.graphics') }}</h3>
+          <label class="check"><input type="checkbox" v-model="form.graphics.bloom" @change="apply" /> {{ t('pause.bloom') }}</label>
+          <label class="check"><input type="checkbox" v-model="form.graphics.shadows" @change="apply" /> {{ t('pause.shadows') }}</label>
+          <label class="slider">{{ t('pause.exposure') }} <input type="range" min="0.4" max="2" step="0.05" v-model.number="form.graphics.exposure" @input="apply" /> {{ form.graphics.exposure.toFixed(2) }}</label>
         </section>
 
         <section>
-          <h3>Camera</h3>
-          <label class="slider">FOV <input type="range" min="50" max="100" step="1" v-model.number="form.camera.fov" @input="apply" /> {{ form.camera.fov }}</label>
-          <label class="slider">Look Speed <input type="range" min="0.2" max="6" step="0.1" v-model.number="form.camera.lookSensitivity" @input="apply" /> {{ form.camera.lookSensitivity.toFixed(1) }}</label>
-          <label class="check"><input type="checkbox" v-model="form.camera.invertY" @change="apply" /> Invert Y</label>
+          <h3>{{ t('pause.camera') }}</h3>
+          <label class="slider">{{ t('pause.fov') }} <input type="range" min="50" max="100" step="1" v-model.number="form.camera.fov" @input="apply" /> {{ form.camera.fov }}</label>
+          <label class="slider">{{ t('pause.lookSpeed') }} <input type="range" min="0.2" max="6" step="0.1" v-model.number="form.camera.lookSensitivity" @input="apply" /> {{ form.camera.lookSensitivity.toFixed(1) }}</label>
+          <label class="check"><input type="checkbox" v-model="form.camera.invertY" @change="apply" /> {{ t('pause.invertY') }}</label>
         </section>
 
         <section>
-          <h3>Audio</h3>
-          <label class="slider">Master <input type="range" min="0" max="1" step="0.05" v-model.number="form.audio.master" @input="apply" /></label>
-          <label class="slider">Engine <input type="range" min="0" max="1" step="0.05" v-model.number="form.audio.engine" @input="apply" /></label>
-          <label class="slider">Ambient <input type="range" min="0" max="1" step="0.05" v-model.number="form.audio.ambient" @input="apply" /></label>
+          <h3>{{ t('pause.audio') }}</h3>
+          <label class="slider">{{ t('pause.master') }} <input type="range" min="0" max="1" step="0.05" v-model.number="form.audio.master" @input="apply" /></label>
+          <label class="slider">{{ t('pause.engine') }} <input type="range" min="0" max="1" step="0.05" v-model.number="form.audio.engine" @input="apply" /></label>
+          <label class="slider">{{ t('pause.ambient') }} <input type="range" min="0" max="1" step="0.05" v-model.number="form.audio.ambient" @input="apply" /></label>
         </section>
 
         <section>
-          <h3>Controller</h3>
-          <label class="slider">Deadzone <input type="range" min="0" max="0.4" step="0.02" v-model.number="form.gamepad.deadzone" @input="apply" /></label>
-          <label class="check"><input type="checkbox" v-model="form.gamepad.vibration" @change="apply" /> Vibration</label>
+          <h3>{{ t('pause.controller') }}</h3>
+          <label class="slider">{{ t('pause.deadzone') }} <input type="range" min="0" max="0.4" step="0.02" v-model.number="form.gamepad.deadzone" @input="apply" /></label>
+          <label class="check"><input type="checkbox" v-model="form.gamepad.vibration" @change="apply" /> {{ t('pause.vibration') }}</label>
         </section>
 
         <section v-if="showEnvironment">
-          <h3>Environment</h3>
-          <p class="hint">Weather and time of day are available from the pause menu during a session.</p>
+          <h3>{{ t('pause.environment') }}</h3>
+          <p class="hint">{{ t('settings.envHint') }}</p>
         </section>
       </div>
     </div>

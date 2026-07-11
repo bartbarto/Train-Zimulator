@@ -67,7 +67,7 @@ export class Simulation {
     this.sessionStats.update(dt, {
       speedMs,
       speedLimitKmh: progress.speedLimitKmh,
-      stationMessage: stationState.message,
+      stationOvershot: stationState.stationOvershot,
       stationId: stationState.station?.id ?? null,
       stationName: stationState.station?.name ?? null,
     })

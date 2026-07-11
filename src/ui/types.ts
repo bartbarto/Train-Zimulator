@@ -2,6 +2,7 @@ import type { SignalAspect } from '@/simulation/SignalSystem'
 import type { WeatherKind } from '@/simulation/Environment'
 import type { SessionResult } from '@/simulation/SessionStats'
 import type { RecordUpdate } from '@/core/BestScoresManager'
+import type { ControlId } from '@/cab/types'
 
 /** Debug overlay statistics. */
 export interface DebugStats {
@@ -38,7 +39,7 @@ export interface UiSnapshot {
   horn: boolean
   weather: WeatherKind
   timeOfDay: number
-  hoveredControl: string
+  hoveredControlId: ControlId | ''
   objective: string
   autoBrakeActive: boolean
   autoBrakeDemand: number
@@ -74,7 +75,7 @@ export function createEmptySnapshot(): UiSnapshot {
     horn: false,
     weather: 'clear',
     timeOfDay: 43200,
-    hoveredControl: '',
+    hoveredControlId: '',
     objective: '',
     autoBrakeActive: false,
     autoBrakeDemand: 0,

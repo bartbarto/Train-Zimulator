@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { UiSnapshot } from '@/ui/types'
+import { useI18n } from '@/stores/i18nStore'
 
 const props = defineProps<{ snapshot: UiSnapshot }>()
+const { t } = useI18n()
 const s = computed(() => props.snapshot)
 
-const aspectLabel: Record<string, string> = {
-  danger: 'STOP',
-  caution: 'CAUTION',
-  preliminaryCaution: 'PRELIM',
-  clear: 'CLEAR',
-}
+const aspectLabel = computed(() => ({
+  danger: t('hud.signal.stop'),
+  caution: t('hud.signal.caution'),
+  preliminaryCaution: t('hud.signal.prelim'),
+  clear: t('hud.signal.clear'),
+}))
 const overspeed = computed(() => s.value.speedKmh > s.value.speedLimitKmh + 3)
 const SPEED_ZONE_STEP_METRES = 50
 
@@ -23,9 +25,9 @@ const speedZoneWarning = computed(() => {
   const next = s.value.upcomingSpeedLimitKmh
   if (next === null || !isFinite(s.value.distanceToSpeedLimit)) return ''
   if (s.value.distanceToSpeedLimit > 900) return ''
-  const direction = next < s.value.speedLimitKmh ? 'Reduce to' : 'Speed limit'
+  const key = next < s.value.speedLimitKmh ? 'hud.speedZoneReduce' : 'hud.speedZoneLimit'
   const distance = quantiseDistanceMetres(s.value.distanceToSpeedLimit)
-  return `${direction} ${Math.round(next)} km/h in ${distance} m`
+  return t(key, { speed: Math.round(next), distance })
 })
 const POWER_DEADZONE = 0.01
 
@@ -44,10 +46,12 @@ const brakeBarClass = computed(() => {
   return 'auto-brk'
 })
 const powerLabel = computed(() => {
-  if (s.value.autoBrakeActive && driverBrakePct.value < autoBrakePct.value) return `Auto brake ${autoBrakePct.value}%`
-  if (displayLever.value > POWER_DEADZONE) return `Power ${powerPct.value}%`
-  if (displayLever.value < -POWER_DEADZONE) return `Brake ${-powerPct.value}%`
-  return 'Idle'
+  if (s.value.autoBrakeActive && driverBrakePct.value < autoBrakePct.value) {
+    return t('hud.autoBrakePct', { pct: autoBrakePct.value })
+  }
+  if (displayLever.value > POWER_DEADZONE) return t('hud.powerPct', { pct: powerPct.value })
+  if (displayLever.value < -POWER_DEADZONE) return t('hud.brakePct', { pct: -powerPct.value })
+  return t('hud.idle')
 })
 </script>
 
@@ -63,19 +67,17 @@ const powerLabel = computed(() => {
 
     <div class="warnings">
       <div v-if="speedZoneWarning" class="warn speed-zone">{{ speedZoneWarning }}</div>
-      <div v-if="s.autoBrakeActive" class="warn auto-brake">Auto brake — {{ s.autoBrakeLabel }}</div>
-      <div v-if="!s.departureAllowed" class="warn warn-y">Departure interlock</div>
-      <div v-if="s.wheelSlip" class="warn warn-y">Wheel slip</div>
-      <div v-if="overspeed" class="warn warn-y">Overspeed</div>
+      <div v-if="s.autoBrakeActive" class="warn auto-brake">{{ t('hud.autoBrake', { label: s.autoBrakeLabel }) }}</div>
+      <div v-if="!s.departureAllowed" class="warn warn-y">{{ t('hud.departureInterlock') }}</div>
+      <div v-if="s.wheelSlip" class="warn warn-y">{{ t('hud.wheelSlip') }}</div>
+      <div v-if="overspeed" class="warn warn-y">{{ t('hud.overspeed') }}</div>
     </div>
 
     <div class="bottom">
       <div class="power hud-card">
-        <label>Power / brake</label>
+        <label>{{ t('hud.powerBrake') }}</label>
         <div class="bar">
-          <!-- <span class="tick top mono">100</span> -->
           <div class="center" />
-          <!-- <span class="tick bottom mono">−100</span> -->
           <div
             v-if="displayLever > POWER_DEADZONE"
             class="fill thr"
@@ -94,23 +96,23 @@ const powerLabel = computed(() => {
       <div class="speedo hud-card">
         <div class="speed mono" :class="{ over: overspeed }">{{ Math.round(Math.abs(s.speedKmh)) }}</div>
         <div class="unit">km/h</div>
-        <div class="limit">Limit {{ Math.round(s.speedLimitKmh) }}</div>
+        <div class="limit">{{ t('hud.limit', { speed: Math.round(s.speedLimitKmh) }) }}</div>
       </div>
 
       <div class="status hud-card">
         <div class="row">
-          <span>Doors</span>
-          <b :class="s.doorsOpen ? 'open' : 'closed'">{{ s.doorsOpen ? 'Open' : 'Closed' }}</b>
+          <span>{{ t('hud.doors') }}</span>
+          <b :class="s.doorsOpen ? 'open' : 'closed'">{{ s.doorsOpen ? t('hud.open') : t('hud.closed') }}</b>
         </div>
         <div v-if="s.doorsOpen && !s.departureAllowed" class="row boarding">
-          <span>On platform</span>
+          <span>{{ t('hud.onPlatform') }}</span>
           <b>{{ s.platformWaiting }}</b>
         </div>
         <div v-if="s.doorsOpen && s.boardingRemaining > 0" class="row boarding">
-          <span>Boarding</span>
+          <span>{{ t('hud.boarding') }}</span>
           <b>{{ Math.ceil(s.boardingRemaining) }}s</b>
         </div>
-        <div v-if="s.horn" class="row horn">Horn</div>
+        <div v-if="s.horn" class="row horn">{{ t('hud.horn') }}</div>
       </div>
     </div>
   </div>
@@ -128,7 +130,6 @@ const powerLabel = computed(() => {
 .hud-card {
   background: rgba(255, 255, 255, 0.94);
   border: 2px solid var(--nmbs-blue-dark);
-  /* border-radius: var(--radius-md); */
   box-shadow: var(--shadow-card);
   backdrop-filter: blur(8px);
 }
@@ -252,21 +253,6 @@ const powerLabel = computed(() => {
   position: relative;
   overflow: hidden;
 }
-
-.tick {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.48rem;
-  font-weight: 600;
-  color: var(--muted);
-  text-shadow: 1px 1px 0 1px var(--surface);
-  z-index: 1;
-  pointer-events: none;
-}
-
-.tick.top { top: 4px; }
-.tick.bottom { bottom: 4px; }
 
 .center {
   position: absolute;

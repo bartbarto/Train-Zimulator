@@ -2,16 +2,19 @@
 import { computed, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useSimStore } from '@/stores/simStore'
+import { useI18n } from '@/stores/i18nStore'
 import type { SettingsManager } from '@/core/SettingsManager'
 import type { BestScoresManager } from '@/core/BestScoresManager'
 import { formatDuration } from '@/core/SessionScore'
 import SettingsPanel from '@/ui/components/SettingsPanel.vue'
+import LangSwitcher from '@/ui/components/LangSwitcher.vue'
 
 const props = defineProps<{ settings: SettingsManager; bestScores: BestScoresManager }>()
 const emit = defineEmits<{ start: [locomotiveId: string, routeId: string] }>()
 
 const store = useSimStore()
 const { locomotiveOptions, routeOptions, locomotiveId, routeId } = storeToRefs(store)
+const { t } = useI18n()
 
 const showSettings = ref(false)
 const selectedLocoId = ref('')
@@ -29,9 +32,9 @@ const personalBest = computed(() =>
 )
 
 function powerLabel(type: string): string {
-  if (type === 'diesel') return 'Diesel'
-  if (type === 'electric') return 'Electric'
-  if (type === 'steam') return 'Steam'
+  if (type === 'diesel') return t('power.diesel')
+  if (type === 'electric') return t('power.electric')
+  if (type === 'steam') return t('power.steam')
   return type
 }
 
@@ -45,15 +48,15 @@ function start(): void {
   <div class="menu">
     <div class="brand">
       <div class="logo" aria-hidden="true">
-        <img src="/logo_clean.svg" alt="Train Zimulator" />
+        <img src="/logo_clean.svg" :alt="t('app.title')" />
       </div>
-      <h1>Train Zimulator</h1>
-      <p class="tagline">Select your train and route</p>
+      <h1>{{ t('app.title') }}</h1>
+      <p class="tagline">{{ t('app.tagline') }}</p>
     </div>
 
     <div class="layout menu-surface">
       <section class="picker">
-        <h2>Locomotive</h2>
+        <h2>{{ t('menu.locomotive') }}</h2>
         <div class="cards">
           <button
             v-for="loco in locomotiveOptions"
@@ -69,7 +72,7 @@ function start(): void {
       </section>
 
       <section class="picker">
-        <h2>Route</h2>
+        <h2>{{ t('menu.route') }}</h2>
         <div class="cards">
           <button
             v-for="route in routeOptions"
@@ -84,47 +87,47 @@ function start(): void {
       </section>
 
       <aside class="stats">
-        <h2>Details</h2>
+        <h2>{{ t('menu.details') }}</h2>
         <template v-if="selectedLoco">
           <h3>{{ selectedLoco.name }}</h3>
           <dl class="mono">
-            <div><dt>Type</dt><dd>{{ powerLabel(selectedLoco.type) }}</dd></div>
-            <div><dt>Max speed</dt><dd>{{ selectedLoco.maxSpeedKmh }} km/h</dd></div>
-            <div><dt>Power</dt><dd>{{ selectedLoco.maxPowerKW }} kW</dd></div>
-            <div><dt>Mass</dt><dd>{{ selectedLoco.massTonnes }} t</dd></div>
-            <div><dt>Length</dt><dd>{{ selectedLoco.lengthMetres }} m</dd></div>
+            <div><dt>{{ t('menu.type') }}</dt><dd>{{ powerLabel(selectedLoco.type) }}</dd></div>
+            <div><dt>{{ t('menu.maxSpeed') }}</dt><dd>{{ selectedLoco.maxSpeedKmh }} km/h</dd></div>
+            <div><dt>{{ t('menu.power') }}</dt><dd>{{ selectedLoco.maxPowerKW }} kW</dd></div>
+            <div><dt>{{ t('menu.mass') }}</dt><dd>{{ selectedLoco.massTonnes }} t</dd></div>
+            <div><dt>{{ t('menu.length') }}</dt><dd>{{ selectedLoco.lengthMetres }} m</dd></div>
           </dl>
         </template>
         <template v-if="selectedRoute">
           <h3>{{ selectedRoute.name }}</h3>
           <dl class="mono">
-            <div><dt>Length</dt><dd>{{ selectedRoute.lengthMetres.toLocaleString() }} m</dd></div>
-            <div><dt>Stations</dt><dd>{{ selectedRoute.stationCount }}</dd></div>
-            <div><dt>Signals</dt><dd>{{ selectedRoute.signalCount }}</dd></div>
-            <div><dt>Line speed</dt><dd>{{ selectedRoute.maxSpeedKmh }} km/h</dd></div>
+            <div><dt>{{ t('menu.length') }}</dt><dd>{{ selectedRoute.lengthMetres.toLocaleString() }} m</dd></div>
+            <div><dt>{{ t('menu.stations') }}</dt><dd>{{ selectedRoute.stationCount }}</dd></div>
+            <div><dt>{{ t('menu.signals') }}</dt><dd>{{ selectedRoute.signalCount }}</dd></div>
+            <div><dt>{{ t('menu.lineSpeed') }}</dt><dd>{{ selectedRoute.maxSpeedKmh }} km/h</dd></div>
           </dl>
         </template>
         <template v-if="selectedLoco && selectedRoute">
-          <h3 class="personal-best-heading">Personal best</h3>
+          <h3 class="personal-best-heading">{{ t('menu.personalBest') }}</h3>
           <dl v-if="personalBest" class="mono personal-best">
-            <div><dt>Best score</dt><dd>{{ personalBest.bestScore.toLocaleString() }}</dd></div>
+            <div><dt>{{ t('menu.bestScore') }}</dt><dd>{{ personalBest.bestScore.toLocaleString() }}</dd></div>
             <div>
-              <dt>Best time</dt>
+              <dt>{{ t('menu.bestTime') }}</dt>
               <dd>{{ personalBest.bestTimeSeconds != null ? formatDuration(personalBest.bestTimeSeconds) : '—' }}</dd>
             </div>
-            <div><dt>Attempts</dt><dd>{{ personalBest.attempts }}</dd></div>
+            <div><dt>{{ t('menu.attempts') }}</dt><dd>{{ personalBest.attempts }}</dd></div>
           </dl>
-          <p v-else class="no-record">No runs yet for this combination</p>
+          <p v-else class="no-record">{{ t('menu.noRuns') }}</p>
         </template>
       </aside>
     </div>
 
-    <div class="actions">
-      <button class="primary start" @click="start">Start</button>
-      <button @click="showSettings = true">Settings</button>
-    </div>
+    <LangSwitcher />
 
-    <!-- <footer class="mono">Add <code>?skipMenu=1</code> to the URL to skip this screen</footer> -->
+    <div class="actions">
+      <button class="primary start" @click="start">{{ t('menu.start') }}</button>
+      <button @click="showSettings = true">{{ t('menu.settings') }}</button>
+    </div>
 
     <SettingsPanel v-if="showSettings" :settings="settings" @close="showSettings = false" />
   </div>
@@ -294,15 +297,6 @@ dd {
 .start {
   min-width: 140px;
   padding: 0.65rem 1.5rem;
-}
-footer {
-  color: var(--muted);
-  font-size: 0.75rem;
-}
-code {
-  color: var(--brand-blue);
-  font-weight: 600;
-  font-size: 0.85em;
 }
 @media (max-width: 820px) {
   .layout {

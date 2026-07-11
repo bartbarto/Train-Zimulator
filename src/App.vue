@@ -103,7 +103,7 @@ function returnToMenu(): void {
     />
     <template v-else-if="phase === 'playing' || phase === 'paused'">
       <HUD v-if="showHud" :snapshot="snapshot" />
-      <Crosshair v-if="showHud && phase === 'playing'" :label="snapshot.hoveredControl" />
+      <Crosshair v-if="showHud && phase === 'playing'" :control-id="snapshot.hoveredControlId" />
       <DebugOverlay v-if="showDebug" :snapshot="snapshot" />
       <PauseMenu v-if="phase === 'paused' && game" :game="game" :settings="settings" @resume="resume" />
     </template>

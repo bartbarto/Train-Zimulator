@@ -1,9 +1,11 @@
 import type { WebGLInfo } from 'three'
+import { t } from '@/i18n'
 import type { TrainTelemetry } from '@/simulation/Train'
 import type { RouteProgress } from '@/simulation/RouteManager'
 import type { Environment } from '@/simulation/Environment'
 import type { Controls } from '@/simulation/Controls'
 import type { StationServiceState } from '@/simulation/StationService'
+import type { ControlId } from '@/cab/types'
 import type { UiSnapshot } from './types'
 
 export interface SnapshotInput {
@@ -12,7 +14,7 @@ export interface SnapshotInput {
   controls: Controls
   stationService: StationServiceState
   environment: Environment
-  hovered: string
+  hoveredControlId: ControlId | ''
   fps: number
   info: WebGLInfo
   aiSpeedKmh: number
@@ -20,13 +22,16 @@ export interface SnapshotInput {
 }
 
 export function buildSnapshot(i: SnapshotInput): UiSnapshot {
-  const { telemetry: t, progress: p, controls: c, stationService } = i
+  const { telemetry: tel, progress: p, controls: c, stationService } = i
   const objective = stationService.message || (p.nextStation
-    ? `Proceed to ${p.nextStation.name} (${formatStationDistance(p.distanceToStation)})`
-    : 'End of line')
+    ? t('objective.proceedTo', {
+        name: p.nextStation.name,
+        distance: formatStationDistance(p.distanceToStation),
+      })
+    : t('objective.endOfLine'))
 
   return {
-    speedKmh: t.speedKmh,
+    speedKmh: tel.speedKmh,
     speedLimitKmh: p.speedLimitKmh,
     upcomingSpeedLimitKmh: p.nextSpeedLimit?.limitKmh ?? null,
     distanceToSpeedLimit: p.distanceToNextSpeedLimit,
@@ -40,15 +45,15 @@ export function buildSnapshot(i: SnapshotInput): UiSnapshot {
     distanceToSignal: p.distanceToSignal,
     nextStationName: p.nextStation?.name ?? '—',
     distanceToStation: p.distanceToStation,
-    wheelSlip: t.wheelSlip,
+    wheelSlip: tel.wheelSlip,
     horn: c.state.horn,
     weather: i.environment.weather,
     timeOfDay: i.environment.timeOfDay,
-    hoveredControl: i.hovered,
+    hoveredControlId: i.hoveredControlId,
     objective,
-    autoBrakeActive: t.autoBrake.active,
-    autoBrakeDemand: t.autoBrake.demand,
-    autoBrakeLabel: t.autoBrake.label,
+    autoBrakeActive: tel.autoBrake.active,
+    autoBrakeDemand: tel.autoBrake.demand,
+    autoBrakeLabel: tel.autoBrake.label,
     debug: {
       fps: i.fps,
       drawCalls: i.info.render.calls,
@@ -63,7 +68,7 @@ export function buildSnapshot(i: SnapshotInput): UiSnapshot {
 
 function formatStationDistance(metres: number): string {
   if (!isFinite(metres)) return '—'
-  if (metres < 0) return 'passed'
+  if (metres < 0) return t('objective.passed')
   if (metres > 1000) return `${(metres / 1000).toFixed(1)} km`
   const stepped = Math.floor(metres / 10) * 10
   const display = stepped === 0 && metres > 0 ? 10 : stepped

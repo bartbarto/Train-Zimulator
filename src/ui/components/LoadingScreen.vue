@@ -1,20 +1,23 @@
 <script setup lang="ts">
+import { useI18n } from '@/stores/i18nStore'
+
 defineProps<{ progress: number }>()
+const { t } = useI18n()
 </script>
 
 <template>
   <div class="loading">
     <div class="brand">
       <div class="logo" aria-hidden="true">
-        <img src="/logo_clean.svg" alt="Train Zimulator" />
+        <img src="/logo_clean.svg" :alt="t('app.title')" />
       </div>
-      <h1>Train Zimulator</h1>
+      <h1>{{ t('app.title') }}</h1>
     </div>
     <div class="bar">
       <div class="fill" :style="{ width: `${Math.round(progress * 100)}%` }" />
     </div>
     <div class="pct mono">{{ Math.round(progress * 100) }}%</div>
-    <div class="hint">W / S — power &amp; brake · Space — horn · R — reverse · O — doors · Click controls to interact</div>
+    <div class="hint">{{ t('loading.hint') }}</div>
   </div>
 </template>
 

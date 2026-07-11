@@ -1,3 +1,4 @@
+import { t } from '@/i18n'
 import type { StationSpec } from '@/data/types'
 import type { Controls } from './Controls'
 import type { RouteManager } from './RouteManager'
@@ -23,6 +24,7 @@ export interface StationServiceState {
   departureAllowed: boolean
   boardingRemaining: number
   message: string
+  stationOvershot: boolean
   stopZoneStart: number
   stopZoneEnd: number
 }
@@ -65,7 +67,7 @@ export class StationService {
 
     if (controls.state.doorsOpen && (!inStopZone || !stopped)) {
       controls.state.doorsOpen = false
-      this.message = stopped ? 'Doors can only open in the stop zone' : 'Stop before opening doors'
+      this.message = stopped ? t('station.doorsStopZone') : t('station.stopBeforeDoors')
     }
 
     if (!inStopZone || !stopped) {
@@ -78,11 +80,11 @@ export class StationService {
       } else {
         this.phase = 'stopRequired'
         if (!stopped && inStopZone && !controls.state.doorsOpen && this.canInchForward(station, distance)) {
-          this.message = `Creep forward in the ${station.name} stop zone`
+          this.message = t('station.creepForward', { name: station.name })
         } else {
           this.message = stopped
             ? this.getStopZoneMessage(station, distance)
-            : `Stop in the ${station.name} zone`
+            : t('station.stopInZone', { name: station.name })
         }
       }
       return
@@ -98,19 +100,19 @@ export class StationService {
       }
       this.phase = this.served.has(station.id) ? 'readyToDepart' : 'boarding'
       this.message = this.served.has(station.id)
-        ? 'Boarding complete - close doors'
-        : `Boarding ${Math.ceil(this.boardingRemaining)}s`
+        ? t('station.boardingComplete')
+        : t('station.boarding', { seconds: Math.ceil(this.boardingRemaining) })
       return
     }
 
     if (this.served.has(station.id)) {
       this.phase = 'readyToDepart'
-      this.message = 'Ready to depart'
+      this.message = t('station.readyToDepart')
       return
     }
 
     this.phase = 'stopRequired'
-    this.message = `Open doors for ${station.name}`
+    this.message = t('station.openDoors', { name: station.name })
   }
 
   toggleDoors(controls: Controls, distance: number, speedMs: number): boolean {
@@ -123,7 +125,7 @@ export class StationService {
     const stopped = Math.abs(speedMs) <= STOPPED_SPEED_MS
     const inStopZone = !!station && isInStopZone(station, distance)
     if (!station || !inStopZone || !stopped) {
-      this.message = stopped ? 'Doors can only open in the station stop zone' : 'Stop in the station zone before opening doors'
+      this.message = stopped ? t('station.doorsInStopZone') : t('station.stopBeforeOpening')
       return false
     }
 
@@ -188,6 +190,7 @@ export class StationService {
       departureAllowed: this.canDepart(),
       boardingRemaining: this.boardingRemaining,
       message: this.message,
+      stationOvershot: station ? this.hasOvershot(station, distance) : false,
       stopZoneStart,
       stopZoneEnd,
     }
@@ -203,8 +206,8 @@ export class StationService {
   }
 
   private getStopZoneMessage(station: StationSpec, distance: number): string {
-    if (distance < getStopZoneStart(station)) return `Move forward into ${station.name} stop zone`
-    if (distance > getStopZoneEnd(station)) return `Overshot ${station.name} — reverse into stop zone`
-    return `Open doors for ${station.name}`
+    if (distance < getStopZoneStart(station)) return t('station.moveForward', { name: station.name })
+    if (distance > getStopZoneEnd(station)) return t('station.overshot', { name: station.name })
+    return t('station.openDoors', { name: station.name })
   }
 }

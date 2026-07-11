@@ -1,12 +1,23 @@
 <script setup lang="ts">
-defineProps<{ label: string }>()
+import { computed } from 'vue'
+import { useI18n } from '@/stores/i18nStore'
+import type { ControlId } from '@/cab/types'
+
+const props = defineProps<{ controlId: ControlId | '' }>()
+const { t } = useI18n()
+
+const label = computed(() => {
+  if (!props.controlId) return ''
+  const key = `controls.${props.controlId === 'power' ? 'powerBrake' : props.controlId}`
+  return t(key)
+})
 </script>
 
 <template>
   <div class="crosshair">
     <div class="dot" :class="{ active: label }" />
     <transition name="fade">
-      <div v-if="label" class="tooltip">{{ label }} · LMB / A</div>
+      <div v-if="label" class="tooltip">{{ label }} · {{ t('hud.interactHint') }}</div>
     </transition>
   </div>
 </template>

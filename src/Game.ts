@@ -343,7 +343,7 @@ export class Game {
       controls: this.sim.train.controls,
       stationService,
       environment: this.sim.environment,
-      hovered: this.cab.interaction.hovered?.label ?? '',
+      hoveredControlId: this.cab.interaction.hovered?.id ?? '',
       fps: this.loop.fps,
       info: this.renderer.gl.info,
       aiSpeedKmh: (this.sim.aiTrains[0]?.speedMs ?? 0) * MS_TO_KMH,
