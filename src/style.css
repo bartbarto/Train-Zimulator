@@ -1,7 +1,7 @@
 :root {
   /* NMBS / SNCB palette */
   --nmbs-white: #ffffff;
-  --nmbs-red: #8c1d40;
+  --nmbs-red: #a21212;
   --nmbs-red-dark: #651428;
   --nmbs-blue-dark: #003875;
   --nmbs-blue: #005aab;
@@ -20,7 +20,7 @@
   --muted: #4a6678;
   --muted-light: var(--nmbs-blue-light);
   --accent: var(--nmbs-red);
-  --accent-dark: var(--nmbs-red-dark);
+  --accent-dark: var(--nmbs-red);
   --brand-blue: var(--nmbs-blue);
   --highlight: var(--nmbs-blue);
   --instrument-bg: #d8d8d8;
@@ -88,13 +88,13 @@ button {
   border-radius: 0;
   padding: 0.55rem 1rem;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
+  /* box-shadow: var(--shadow-sm); */
   transition: transform 0.08s ease, box-shadow 0.08s ease;
 }
 
 button:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 var(--border);
+  transform: translate(-1px, -1px) scale(1.005);
+  /* box-shadow: 3px 3px 0 var(--border); */
 }
 
 button:active {

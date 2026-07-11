@@ -7,7 +7,7 @@ import { Interaction } from './Interaction'
 import { Gauges } from './Gauges'
 import { PlatformMonitor } from './PlatformMonitor'
 import { TrainConsist } from './TrainConsist'
-import type { CabControlHandle } from './types'
+import type { CabControlHandle, ControlId } from './types'
 import type { Controls, ControlState, MultiState } from '@/simulation/Controls'
 import type { TrackPose } from '@/simulation/ITrackProvider'
 import type { ITrackProvider } from '@/simulation/ITrackProvider'
@@ -27,6 +27,12 @@ export class Cab {
   private readonly headlight = new SpotLight(0xfff0d4, 0, 280, Math.PI / 4.5, 0.35, 1.5)
   private readonly pose: TrackPose
   private readonly track: ITrackProvider
+  private readonly buttonPressUntil = new Map<ControlId, number>()
+
+  /** Briefly depress a cab push button (used for toggles and click feedback). */
+  triggerButtonPress(id: ControlId, duration = 0.18): void {
+    this.buttonPressUntil.set(id, performance.now() / 1000 + duration)
+  }
 
   constructor(track: ITrackProvider, cameraConfig: CameraConfig, aspect: number, colors: CabColorOptions = {}) {
     this.track = track
@@ -80,8 +86,22 @@ export class Cab {
           : h.restRotation + -v * (h.rangeRotationBack ?? -h.rangeRotation)
       h.pivot.rotation.x = damp(h.pivot.rotation.x, target, 16, dt)
     }
+    this.syncButtons(dt, state)
     this.syncDoorButton(state)
     this.consist.updateDoors(dt, state.doorsOpen)
+  }
+
+  private syncButtons(dt: number, state: ControlState): void {
+    const now = performance.now() / 1000
+    for (const h of this.handles) {
+      if (h.kind === 'lever') continue
+      const restY = h.restY ?? h.object.position.y
+      let pressed = 0
+      if (h.id === 'horn' && state.horn) pressed = 1
+      else if ((this.buttonPressUntil.get(h.id) ?? 0) > now) pressed = 1
+      const targetY = restY - pressed * BUTTON_PRESS_DEPTH
+      h.object.position.y = damp(h.object.position.y, targetY, 28, dt)
+    }
   }
 
   private syncDoorButton(state: ControlState): void {
@@ -120,3 +140,4 @@ export class Cab {
 }
 
 const LOOK_TARGET = new Vector3()
+const BUTTON_PRESS_DEPTH = 0.014

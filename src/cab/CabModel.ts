@@ -296,7 +296,7 @@ export class CabModel {
     cap.position.set(x, y, z)
     cap.userData.controlId = id
     this.group.add(cap)
-    this.handles.push({ id, kind, object: cap, pivot: cap, restRotation: 0, rangeRotation: 0, label })
+    this.handles.push({ id, kind, object: cap, pivot: cap, restRotation: 0, rangeRotation: 0, label, restY: y })
   }
 }
 

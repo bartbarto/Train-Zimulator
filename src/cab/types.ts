@@ -24,4 +24,6 @@ export interface CabControlHandle {
   rangeRotationBack?: number
   /** Human-readable label for tooltips. */
   label: string
+  /** Rest Y for push buttons (cap position when not pressed). */
+  restY?: number
 }

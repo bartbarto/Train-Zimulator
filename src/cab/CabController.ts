@@ -102,6 +102,7 @@ export class CabController {
       case 'horn':
         return this.pulseHorn()
       case 'doors':
+        this.cab.triggerButtonPress('doors')
         return this.callbacks.onToggleDoors()
       case 'resetCamera':
         return this.cab.camera.reset()
@@ -146,6 +147,6 @@ export class CabController {
 
   private pressFeedback(h: CabControlHandle): void {
     if (h.kind === 'lever') return
-    gsap.fromTo(h.object.scale, { x: 0.8, y: 0.8, z: 0.8 }, { x: 1, y: 1, z: 1, duration: 0.25, ease: 'back.out(3)' })
+    if (h.id !== 'horn') this.cab.triggerButtonPress(h.id)
   }
 }
