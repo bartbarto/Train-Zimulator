@@ -93,6 +93,16 @@ export class EngineAudio {
     this.bus.gain.setTargetAtTime(value, this.audio.ctx.currentTime, 0.1)
   }
 
+  silence(): void {
+    const t = this.audio.ctx.currentTime
+    this.rumbleGain.gain.setValueAtTime(0, t)
+    this.turboGain.gain.setValueAtTime(0, t)
+    this.hornGain.gain.setValueAtTime(0, t)
+    this.bellGain.gain.setValueAtTime(0, t)
+    this.bellTimer = 0
+    this.bellOn = false
+  }
+
   update(dt: number, power: PowerTelemetry, horn: boolean, bell: boolean): void {
     const ctx = this.audio.ctx
     const t = ctx.currentTime

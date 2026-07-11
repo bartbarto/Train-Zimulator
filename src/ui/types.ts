@@ -1,5 +1,7 @@
 import type { SignalAspect } from '@/simulation/SignalSystem'
 import type { WeatherKind } from '@/simulation/Environment'
+import type { SessionResult } from '@/simulation/SessionStats'
+import type { RecordUpdate } from '@/core/BestScoresManager'
 
 /** Debug overlay statistics. */
 export interface DebugStats {
@@ -42,6 +44,14 @@ export interface UiSnapshot {
   autoBrakeDemand: number
   autoBrakeLabel: string
   debug: DebugStats
+}
+
+export interface SessionCompletion {
+  result: SessionResult
+  locomotiveId: string
+  routeId: string
+  score: number
+  record: RecordUpdate
 }
 
 export function createEmptySnapshot(): UiSnapshot {

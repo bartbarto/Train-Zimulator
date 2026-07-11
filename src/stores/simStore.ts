@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { shallowRef } from 'vue'
 import { createEmptySnapshot, type UiSnapshot } from '@/ui/types'
 import type { LocomotiveOption, RouteOption } from '@/core/ContentCatalog'
-import type { SessionResult } from '@/simulation/SessionStats'
+import type { SessionCompletion } from '@/ui/types'
 
 export type GamePhase = 'loading' | 'menu' | 'playing' | 'paused' | 'finished'
 
@@ -17,7 +17,7 @@ export const useSimStore = defineStore('sim', () => {
   const locomotiveOptions = shallowRef<LocomotiveOption[]>([])
   const routeOptions = shallowRef<RouteOption[]>([])
   const locomotiveSwitching = shallowRef(false)
-  const sessionResult = shallowRef<SessionResult | null>(null)
+  const sessionCompletion = shallowRef<SessionCompletion | null>(null)
 
   function setSnapshot(next: UiSnapshot): void {
     snapshot.value = next
@@ -60,8 +60,8 @@ export const useSimStore = defineStore('sim', () => {
     locomotiveSwitching.value = value
   }
 
-  function setSessionResult(result: SessionResult | null): void {
-    sessionResult.value = result
+  function setSessionCompletion(completion: SessionCompletion | null): void {
+    sessionCompletion.value = completion
   }
 
   return {
@@ -75,7 +75,7 @@ export const useSimStore = defineStore('sim', () => {
     locomotiveOptions,
     routeOptions,
     locomotiveSwitching,
-    sessionResult,
+    sessionCompletion,
     setSnapshot,
     setPhase,
     setLoadProgress,
@@ -84,6 +84,6 @@ export const useSimStore = defineStore('sim', () => {
     setLocomotiveId,
     setRouteId,
     setLocomotiveSwitching,
-    setSessionResult,
+    setSessionCompletion,
   }
 })

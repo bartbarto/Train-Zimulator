@@ -127,8 +127,8 @@ const powerLabel = computed(() => {
 
 .hud-card {
   background: rgba(255, 255, 255, 0.94);
-  border: 1px solid var(--divider);
-  border-radius: var(--radius-md);
+  border: 2px solid var(--nmbs-blue-dark);
+  /* border-radius: var(--radius-md); */
   box-shadow: var(--shadow-card);
   backdrop-filter: blur(8px);
 }

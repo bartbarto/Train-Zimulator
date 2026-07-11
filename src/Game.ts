@@ -34,7 +34,7 @@ export interface GameCallbacks {
   onPauseChanged: (paused: boolean) => void
   onHudChanged: (visible: boolean) => void
   onDebugChanged: (visible: boolean) => void
-  onSessionComplete: (result: SessionResult) => void
+  onSessionComplete: (result: SessionResult, locomotiveId: string, routeId: string) => void
   onContentReady: (locomotives: LocomotiveOption[], routes: RouteOption[], locomotiveId: string, routeId: string) => void
   onLocomotivesReady: (options: LocomotiveOption[], currentId: string) => void
   onLocomotiveChanged: (id: string) => void
@@ -281,9 +281,10 @@ export class Game {
     this.finished = true
     this.paused = true
     this.input.mouse.releaseLook()
+    this.sound.silence()
     const passengers = this.world.getBoardedPassengerCount()
     const result = this.sim.getSessionResult(this.routeSpec.name, passengers)
-    this.callbacks.onSessionComplete(result)
+    this.callbacks.onSessionComplete(result, this.locomotiveId, this.routeId)
   }
 
   returnToMenu(): void {
@@ -294,7 +295,11 @@ export class Game {
     if (!this.sessionReady) return
 
     const snapshot = this.input.update(frameDt)
-    if (!this.paused && !this.finished) this.cabController.update(snapshot, frameDt)
+    if (this.paused && !this.finished && snapshot.pressed.has('pause')) {
+      this.togglePause()
+    } else if (!this.paused && !this.finished) {
+      this.cabController.update(snapshot, frameDt)
+    }
 
     const train = this.sim.train
     this.cab.ride(train.physics.distance)
@@ -318,7 +323,9 @@ export class Game {
       trainLengthMetres: this.cab.consist.rearOffsetZ,
       carriageDoorOffsetsZ: this.cab.consist.doorOffsetsZ,
     })
-    this.sound.update(frameDt, tel, train.controls.state, train.brakeEffort, this.sim.environment.preset.rain)
+    if (!this.paused && !this.finished) {
+      this.sound.update(frameDt, tel, train.controls.state, train.brakeEffort, this.sim.environment.preset.rain)
+    }
 
     this.cab.updatePlatformMonitor(this.scene.scene)
 
@@ -353,7 +360,10 @@ export class Game {
   setPaused(value: boolean): void {
     if (!this.sessionReady) return
     this.paused = value
-    if (value) this.input.mouse.releaseLook()
+    if (value) {
+      this.input.mouse.releaseLook()
+      this.sound.silence()
+    }
     this.callbacks.onPauseChanged(value)
   }
 

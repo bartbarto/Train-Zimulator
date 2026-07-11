@@ -3,9 +3,11 @@ import { computed, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useSimStore } from '@/stores/simStore'
 import type { SettingsManager } from '@/core/SettingsManager'
+import type { BestScoresManager } from '@/core/BestScoresManager'
+import { formatDuration } from '@/core/SessionScore'
 import SettingsPanel from '@/ui/components/SettingsPanel.vue'
 
-defineProps<{ settings: SettingsManager }>()
+const props = defineProps<{ settings: SettingsManager; bestScores: BestScoresManager }>()
 const emit = defineEmits<{ start: [locomotiveId: string, routeId: string] }>()
 
 const store = useSimStore()
@@ -20,6 +22,11 @@ watch(routeId, (id) => { if (id) selectedRouteId.value = id }, { immediate: true
 
 const selectedLoco = computed(() => locomotiveOptions.value.find((l) => l.id === selectedLocoId.value))
 const selectedRoute = computed(() => routeOptions.value.find((r) => r.id === selectedRouteId.value))
+const personalBest = computed(() =>
+  selectedLocoId.value && selectedRouteId.value
+    ? props.bestScores.get(selectedRouteId.value, selectedLocoId.value)
+    : null,
+)
 
 function powerLabel(type: string): string {
   if (type === 'diesel') return 'Diesel'
@@ -97,6 +104,18 @@ function start(): void {
             <div><dt>Line speed</dt><dd>{{ selectedRoute.maxSpeedKmh }} km/h</dd></div>
           </dl>
         </template>
+        <template v-if="selectedLoco && selectedRoute">
+          <h3 class="personal-best-heading">Personal best</h3>
+          <dl v-if="personalBest" class="mono personal-best">
+            <div><dt>Best score</dt><dd>{{ personalBest.bestScore.toLocaleString() }}</dd></div>
+            <div>
+              <dt>Best time</dt>
+              <dd>{{ personalBest.bestTimeSeconds != null ? formatDuration(personalBest.bestTimeSeconds) : '—' }}</dd>
+            </div>
+            <div><dt>Attempts</dt><dd>{{ personalBest.attempts }}</dd></div>
+          </dl>
+          <p v-else class="no-record">No runs yet for this combination</p>
+        </template>
       </aside>
     </div>
 
@@ -105,7 +124,7 @@ function start(): void {
       <button @click="showSettings = true">Settings</button>
     </div>
 
-    <footer class="mono">Add <code>?skipMenu=1</code> to the URL to skip this screen</footer>
+    <!-- <footer class="mono">Add <code>?skipMenu=1</code> to the URL to skip this screen</footer> -->
 
     <SettingsPanel v-if="showSettings" :settings="settings" @close="showSettings = false" />
   </div>
@@ -228,6 +247,21 @@ h1 {
 }
 .stats h3:first-of-type {
   margin-top: 0;
+}
+.personal-best-heading {
+  margin-top: 1.1rem !important;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--divider);
+}
+.personal-best dd {
+  color: var(--brand-blue);
+}
+.no-record {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 500;
+  margin-top: 0.35rem;
+  line-height: 1.4;
 }
 dl {
   display: flex;

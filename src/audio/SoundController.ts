@@ -31,6 +31,11 @@ export class SoundController {
     this.ambient.setVolume(settings.ambient)
   }
 
+  silence(): void {
+    this.engine.silence()
+    this.ambient.silence()
+  }
+
   update(dt: number, telemetry: TrainTelemetry, controls: ControlState, brakeEffort: number, rainIntensity: number): void {
     this.engine.update(dt, telemetry.power, controls.horn, controls.bell)
     this.ambient.update(dt, telemetry.speedMs, brakeEffort, rainIntensity)

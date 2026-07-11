@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import type { SessionResult } from '@/simulation/SessionStats'
+import { formatDuration } from '@/core/SessionScore'
+import type { SessionCompletion } from '@/ui/types'
 
-const props = defineProps<{ result: SessionResult }>()
+const props = defineProps<{ completion: SessionCompletion }>()
 const emit = defineEmits<{ menu: [] }>()
 
 const showOffences = ref(false)
-const r = computed(() => props.result)
+const r = computed(() => props.completion.result)
+const score = computed(() => props.completion.score)
+const record = computed(() => props.completion.record)
 
 const timeLabel = computed(() => formatDuration(r.value.elapsedSeconds))
 const stationsLabel = computed(() => `${r.value.stationsServed} / ${r.value.stationsTotal}`)
@@ -19,17 +22,8 @@ const rating = computed(() => {
   return 'Room for improvement'
 })
 
-function formatDuration(seconds: number): string {
-  const total = Math.max(0, Math.floor(seconds))
-  const mins = Math.floor(total / 60)
-  const secs = total % 60
-  return `${mins}:${secs.toString().padStart(2, '0')}`
-}
-
 function formatOffenceTime(seconds: number): string {
-  const mins = Math.floor(seconds / 60)
-  const secs = Math.floor(seconds % 60)
-  return `${mins}:${secs.toString().padStart(2, '0')}`
+  return formatDuration(seconds)
 }
 </script>
 
@@ -44,7 +38,16 @@ function formatOffenceTime(seconds: number): string {
         <span class="rating">{{ rating }}</span>
       </header>
 
+      <div v-if="record.isNewBestScore || record.isNewBestTime" class="records">
+        <span v-if="record.isNewBestScore" class="badge">New best score</span>
+        <span v-if="record.isNewBestTime" class="badge">New best time</span>
+      </div>
+
       <div class="stats">
+        <div class="stat">
+          <span class="label">Score</span>
+          <span class="value mono">{{ score.toLocaleString() }}</span>
+        </div>
         <div class="stat">
           <span class="label">Time taken</span>
           <span class="value mono">{{ timeLabel }}</span>
@@ -129,6 +132,25 @@ function formatOffenceTime(seconds: number): string {
   padding: 0.35rem 0.75rem;
   border-radius: var(--radius-pill);
   white-space: nowrap;
+}
+
+.records {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1.5rem 0;
+}
+
+.badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--nmbs-blue-dark);
+  background: #e8f5e0;
+  border: 1px solid #b8ddb0;
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-pill);
 }
 
 .stats {

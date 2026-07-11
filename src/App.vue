@@ -3,6 +3,7 @@ import { markRaw, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useSimStore } from '@/stores/simStore'
 import { SettingsManager } from '@/core/SettingsManager'
+import { BestScoresManager } from '@/core/BestScoresManager'
 import { parseLaunchParams } from '@/core/LaunchParams'
 import { Game } from '@/Game'
 import LoadingScreen from '@/ui/components/LoadingScreen.vue'
@@ -15,9 +16,10 @@ import EndOfLineScreen from '@/ui/components/EndOfLineScreen.vue'
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 const store = useSimStore()
-const { snapshot, phase, loadProgress, showHud, showDebug, sessionResult } = storeToRefs(store)
+const { snapshot, phase, loadProgress, showHud, showDebug, sessionCompletion } = storeToRefs(store)
 
 const settings = markRaw(new SettingsManager())
+const bestScores = markRaw(new BestScoresManager())
 const game = shallowRef<Game | null>(null)
 const starting = ref(false)
 
@@ -34,8 +36,9 @@ onMounted(async () => {
       },
       onHudChanged: (v) => (store.showHud = v),
       onDebugChanged: (v) => (store.showDebug = v),
-      onSessionComplete: (result) => {
-        store.setSessionResult(result)
+      onSessionComplete: (result, locomotiveId, routeId) => {
+        const record = bestScores.record(locomotiveId, routeId, result)
+        store.setSessionCompletion({ result, locomotiveId, routeId, score: record.score, record })
         store.setPhase('finished')
       },
       onContentReady: (locomotives, routes, locoId, routeId) => {
@@ -83,7 +86,7 @@ function resume(): void {
 
 function returnToMenu(): void {
   game.value?.returnToMenu()
-  store.setSessionResult(null)
+  store.setSessionCompletion(null)
   store.setPhase('menu')
 }
 </script>
@@ -95,6 +98,7 @@ function returnToMenu(): void {
     <MainMenu
       v-else-if="phase === 'menu' && game"
       :settings="settings"
+      :best-scores="bestScores"
       @start="beginSession"
     />
     <template v-else-if="phase === 'playing' || phase === 'paused'">
@@ -104,8 +108,8 @@ function returnToMenu(): void {
       <PauseMenu v-if="phase === 'paused' && game" :game="game" :settings="settings" @resume="resume" />
     </template>
     <EndOfLineScreen
-      v-else-if="phase === 'finished' && sessionResult"
-      :result="sessionResult"
+      v-else-if="phase === 'finished' && sessionCompletion"
+      :completion="sessionCompletion"
       @menu="returnToMenu"
     />
   </div>

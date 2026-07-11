@@ -65,6 +65,15 @@ export class AmbientAudio {
     this.bus.gain.setTargetAtTime(value, this.audio.ctx.currentTime, 0.1)
   }
 
+  silence(): void {
+    const t = this.audio.ctx.currentTime
+    this.windGain.gain.setValueAtTime(0, t)
+    this.wheelGain.gain.setValueAtTime(0, t)
+    this.brakeGain.gain.setValueAtTime(0, t)
+    this.rainGain.gain.setValueAtTime(0, t)
+    this.jointTimer = 0
+  }
+
   update(dt: number, speedMs: number, brakeEffort: number, rainIntensity: number): void {
     const t = this.audio.ctx.currentTime
     const speed = Math.abs(speedMs)
