@@ -1,10 +1,12 @@
-import { Group, Mesh, MeshStandardMaterial, PointLight, SpotLight, Vector3 } from 'three'
+import { Group, Mesh, MeshStandardMaterial, PointLight, Scene, SpotLight, Vector3 } from 'three'
 import { clamp01, damp, lerp } from '@/engine/math'
 import type { CameraConfig } from './CabCamera'
 import { CabCamera } from './CabCamera'
 import { CabModel, type CabColorOptions } from './CabModel'
 import { Interaction } from './Interaction'
 import { Gauges } from './Gauges'
+import { PlatformMonitor } from './PlatformMonitor'
+import { TrainConsist } from './TrainConsist'
 import type { CabControlHandle } from './types'
 import type { Controls, ControlState, MultiState } from '@/simulation/Controls'
 import type { TrackPose } from '@/simulation/ITrackProvider'
@@ -13,10 +15,13 @@ import type { ITrackProvider } from '@/simulation/ITrackProvider'
 export class Cab {
   readonly root = new Group()
   readonly camera: CabCamera
+  readonly platformMonitor: PlatformMonitor
+  readonly consist: TrainConsist
   readonly interaction: Interaction
   readonly handles: CabControlHandle[]
 
   private readonly model: CabModel
+  private readonly interior = new Group()
   private readonly gauges = new Gauges()
   private readonly cabLight = new PointLight(0xffe6b0, 1.4, 6)
   private readonly headlight = new SpotLight(0xfff0d4, 0, 280, Math.PI / 4.5, 0.35, 1.5)
@@ -26,10 +31,22 @@ export class Cab {
   constructor(track: ITrackProvider, cameraConfig: CameraConfig, aspect: number, colors: CabColorOptions = {}) {
     this.track = track
     this.camera = new CabCamera(cameraConfig, aspect)
+    this.platformMonitor = new PlatformMonitor()
+    this.consist = new TrainConsist(colors)
     this.model = new CabModel(colors)
     this.handles = this.model.handles
     this.interaction = new Interaction(this.handles)
 
+    this.interior.add(
+      this.model.group,
+      this.gauges.group,
+      this.platformMonitor.group,
+      this.cabLight,
+      this.headlight,
+      this.headlight.target,
+      this.camera.camera,
+    )
+    this.root.add(this.interior, this.consist.group)
     this.cabLight.position.set(0, 2.1, 0.4)
     this.headlight.position.set(0, 1.1, -2.6)
     this.headlight.target.position.set(0, -0.15, -90)
@@ -38,7 +55,6 @@ export class Cab {
     this.headlight.shadow.camera.near = 1
     this.headlight.shadow.camera.far = 150
     this.headlight.shadow.bias = -0.0002
-    this.root.add(this.model.group, this.gauges.group, this.cabLight, this.headlight, this.headlight.target, this.camera.camera)
     this.pose = { position: new Vector3(), tangent: new Vector3(), cant: 0 }
   }
 
@@ -78,12 +94,17 @@ export class Cab {
     this.gauges.update(dt, speedKmh, maxSpeedKmh, brakePipeBar, maxBar)
   }
 
+  updatePlatformMonitor(scene: Scene): void {
+    this.platformMonitor.render(scene, this.root, this.interior, this.consist.rearOffsetZ)
+  }
+
   update(dt: number): void {
     this.camera.update(dt)
   }
 
   setCabColors(colors: CabColorOptions = {}): void {
     this.model.setCabColors(colors)
+    this.consist.setColors(colors)
   }
 
   /** Front headlight — auto-on at night; optional manual dim/bright via control state. */

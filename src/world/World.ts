@@ -60,4 +60,12 @@ export class World {
     this.signalMast.update()
     this.weather.update(dt, env, cameraPos)
   }
+
+  getPlatformWaitingCount(stationId: string | null): number {
+    return this.stations.getWaitingPassengerCount(stationId)
+  }
+
+  getPlatformLookTarget(stationId: string | null, out: Vector3): boolean {
+    return this.stations.getPlatformLookTarget(stationId, out)
+  }
 }

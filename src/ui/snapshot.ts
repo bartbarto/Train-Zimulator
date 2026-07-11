@@ -16,6 +16,7 @@ export interface SnapshotInput {
   fps: number
   info: WebGLInfo
   aiSpeedKmh: number
+  platformWaiting: number
 }
 
 export function buildSnapshot(i: SnapshotInput): UiSnapshot {
@@ -34,6 +35,7 @@ export function buildSnapshot(i: SnapshotInput): UiSnapshot {
     doorsCanOpen: stationService.doorsCanOpen,
     departureAllowed: stationService.departureAllowed && !c.state.doorsOpen,
     boardingRemaining: stationService.boardingRemaining,
+    platformWaiting: i.platformWaiting,
     signalAspect: p.nextSignal?.aspect ?? null,
     distanceToSignal: p.distanceToSignal,
     nextStationName: p.nextStation?.name ?? '—',

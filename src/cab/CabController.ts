@@ -14,7 +14,7 @@ export interface CabControllerCallbacks {
 }
 
 const POWER_RATE = 0.85
-const TRIGGER_THRESHOLD = 0.04
+const TRIGGER_THRESHOLD = 0.01
 
 /**
  * Maps input to the three cab controls: combined power lever, horn, doors.
@@ -72,6 +72,12 @@ export class CabController {
     const analog = s.axes.throttleAxis - s.axes.trainBrakeAxis
     if (Math.abs(analog) > TRIGGER_THRESHOLD) {
       this.controls.setPowerLever(analog)
+    } else if (
+      this.input.gamepad.connected &&
+      !s.held.has('powerUp') &&
+      !s.held.has('powerDown')
+    ) {
+      this.controls.setPowerLever(0)
     }
   }
 

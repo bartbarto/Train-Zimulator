@@ -6,7 +6,6 @@ import {
   Mesh,
   MeshStandardMaterial,
   Object3D,
-  SphereGeometry,
 } from 'three'
 import { DEG_TO_RAD } from '@/engine/math'
 import type { CabControlHandle, ControlId, ControlKind } from './types'
@@ -45,6 +44,10 @@ const DEFAULT_TONES: CabTones = {
 export interface CabColorOptions {
   cabColor?: string | number
   cabColorAccent?: string | number
+  /** Carriage body tint; falls back to `cabColor` when omitted. */
+  carriageColor?: string | number
+  /** Carriage stripe/accent; falls back to `cabColorAccent` when omitted. */
+  carriageAccentColor?: string | number
 }
 
 function parseHexColor(value: string | number | undefined | null): number | null {
@@ -78,12 +81,12 @@ function deriveCabTones(cabColor: string | number): CabTones | null {
   }
 }
 
-function resolveCabTones(cabColor?: string | number): CabTones {
+export function resolveCabTones(cabColor?: string | number): CabTones {
   if (cabColor === undefined || cabColor === null) return DEFAULT_TONES
   return deriveCabTones(cabColor) ?? DEFAULT_TONES
 }
 
-function resolveAccentColor(cabColorAccent?: string | number): number | null {
+export function resolveAccentColor(cabColorAccent?: string | number): number | null {
   const hex = parseHexColor(cabColorAccent)
   if (hex === null) return null
 
@@ -91,6 +94,16 @@ function resolveAccentColor(cabColorAccent?: string | number): number | null {
   const hsl = { h: 0, s: 0, l: 0 }
   color.getHSL(hsl)
   return new Color().setHSL(hsl.h, hsl.s, Math.max(hsl.l, ACCENT_MIN_LIGHTNESS)).getHex()
+}
+
+/** Raw carriage body colour from JSON (no tone derivation). */
+export function resolveCarriageColor(color?: string | number, fallback?: string | number): number {
+  return parseHexColor(color) ?? parseHexColor(fallback) ?? DEFAULT_PANEL
+}
+
+/** Raw carriage stripe colour from JSON (no tone derivation). */
+export function resolveCarriageAccentColor(color?: string | number, fallback?: string | number): number {
+  return parseHexColor(color) ?? parseHexColor(fallback) ?? DEFAULT_DARK
 }
 
 function createCabMaterial(color: number, metalness: number, roughness: number): MeshStandardMaterial {
@@ -189,26 +202,33 @@ export class CabModel {
 
   /** One lever: forward = power, backward = brake. */
   private buildPowerLever(): void {
+    const leverX = 0.15
+    const leverY = 1.278
+    const leverZ = -0.52
+    const slotMat = new MeshStandardMaterial({ color: 0x080808, metalness: 0.05, roughness: 0.98 })
+    const slot = plate(0.09, 0.01, 0.195, leverX, leverY, leverZ, slotMat)
+    this.group.add(slot)
+
     const pivot = new Object3D()
-    pivot.position.set(0.15, 1.28, -0.55)
-    const base = new Mesh(new CylinderGeometry(0.06, 0.07, 0.05, 10), this.metal)
-    const shaft = new Mesh(
-      new CylinderGeometry(0.028, 0.035, 0.42, 8),
-      new MeshStandardMaterial({ color: 0x4a6b4a, metalness: 0.5, roughness: 0.5 }),
-    )
-    shaft.position.y = 0.21
-    const knob = new Mesh(
-      new SphereGeometry(0.055, 12, 8),
-      new MeshStandardMaterial({ color: 0x5a8a5a, metalness: 0.4, roughness: 0.4 }),
-    )
-    knob.position.y = 0.44
-    knob.userData.controlId = 'power'
-    pivot.add(base, shaft, knob)
+    pivot.position.set(leverX, leverY - 0.03, leverZ)
+    const leverMat = new MeshStandardMaterial({ color: 0x4a6b4a, metalness: 0.5, roughness: 0.5 })
+    const gripMat = new MeshStandardMaterial({ color: 0x333333, metalness: 0.4, roughness: 0.8 })
+
+    const shaftHeight = 0.22
+    const shaft = new Mesh(new CylinderGeometry(0.028, 0.028, shaftHeight, 8), leverMat)
+    shaft.position.y = shaftHeight / 2
+
+    const grip = new Mesh(new CylinderGeometry(0.03, 0.03, 0.18, 10), gripMat)
+    grip.rotation.z = Math.PI / 2
+    grip.position.y = shaftHeight + 0.0
+    grip.userData.controlId = 'power'
+
+    pivot.add(shaft, grip)
     this.group.add(pivot)
     this.handles.push({
       id: 'power',
       kind: 'lever',
-      object: knob,
+      object: grip,
       pivot,
       restRotation: 0,
       rangeRotation: -42 * DEG_TO_RAD,

@@ -74,6 +74,11 @@ export class Controls {
 
   setPowerLever(value: number): void {
     const v = clamp(value, -1, 1)
+    if (v < 0.01 && v > 0) {
+      this.state.throttle = 0
+      this.state.trainBrake = 0
+      return
+    }
     if (v > 0) {
       this.state.throttle = v
       this.state.trainBrake = 0

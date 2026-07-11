@@ -3,6 +3,8 @@
   "name": "NMBS/SNCB MR08 (Siemens Desiro ML)",
   "cabColor": "0x7e7e7e",
   "cabColorAccent": "0xf5d803",
+  "carriageColor": "0x7e7e7e",
+  "carriageAccentColor": "0xf5d803",
   "type": "electric",
   "massTonnes": 147,
   "lengthMetres": 79.9,
@@ -13,8 +15,15 @@
   "dynamicBrakeEffortKN": 180,
   "trailingMassTonnes": 0,
   "trailingLengthMetres": 0,
-  "resistance": { "a": 7200, "b": 175, "c": 7.8 },
-  "adhesion": { "drivenMassFraction": 0.92, "baseFriction": 0.34 },
+  "resistance": {
+    "a": 7200,
+    "b": 175,
+    "c": 7.8
+  },
+  "adhesion": {
+    "drivenMassFraction": 0.92,
+    "baseFriction": 0.34
+  },
   "brakes": {
     "mainReservoirBar": 9.0,
     "brakePipeBar": 5.0,

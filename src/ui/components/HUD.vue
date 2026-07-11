@@ -27,19 +27,26 @@ const speedZoneWarning = computed(() => {
   const distance = quantiseDistanceMetres(s.value.distanceToSpeedLimit)
   return `${direction} ${Math.round(next)} km/h in ${distance} m`
 })
-const powerPct = computed(() => Math.round(Math.abs(s.value.powerLever) * 100))
-const driverBrakePct = computed(() => (s.value.powerLever < -0.02 ? powerPct.value : 0))
+const POWER_DEADZONE = 0.01
+
+const displayLever = computed(() =>
+  Math.abs(s.value.powerLever) < POWER_DEADZONE ? 0 : s.value.powerLever,
+)
+const powerPct = computed(() => Math.round(displayLever.value * 100))
+const powerFillPct = computed(() => Math.abs(displayLever.value) * 50)
+const driverBrakePct = computed(() => (displayLever.value < -POWER_DEADZONE ? -powerPct.value : 0))
 const autoBrakePct = computed(() => Math.round(s.value.autoBrakeDemand * 100))
 const totalBrakePct = computed(() => Math.max(driverBrakePct.value, autoBrakePct.value))
+const brakeFillPct = computed(() => Math.min(50, Math.abs(totalBrakePct.value) * 0.5))
 const brakeBarClass = computed(() => {
   if (s.value.autoBrakeActive && driverBrakePct.value < autoBrakePct.value) return 'auto-brk'
-  if (driverBrakePct.value > 0) return 'brk'
+  if (driverBrakePct.value < 0) return 'brk'
   return 'auto-brk'
 })
 const powerLabel = computed(() => {
   if (s.value.autoBrakeActive && driverBrakePct.value < autoBrakePct.value) return `AUTO BRAKE ${autoBrakePct.value}%`
-  if (s.value.powerLever > 0.02) return `POWER ${powerPct.value}%`
-  if (s.value.powerLever < -0.02) return `BRAKE ${powerPct.value}%`
+  if (displayLever.value > POWER_DEADZONE) return `POWER ${powerPct.value}%`
+  if (displayLever.value < -POWER_DEADZONE) return `BRAKE ${-powerPct.value}%`
   return 'IDLE'
 })
 </script>
@@ -66,17 +73,19 @@ const powerLabel = computed(() => {
       <div class="power panel">
         <label>POWER / BRAKE</label>
         <div class="bar">
+          <span class="tick top mono">100</span>
           <div class="center" />
+          <span class="tick bottom mono">−100</span>
           <div
-            v-if="s.powerLever > 0"
+            v-if="displayLever > POWER_DEADZONE"
             class="fill thr"
-            :style="{ height: `${powerPct}%` }"
+            :style="{ height: `${powerFillPct}%` }"
           />
           <div
             v-else-if="totalBrakePct > 0"
             class="fill"
             :class="brakeBarClass"
-            :style="{ height: `${totalBrakePct}%` }"
+            :style="{ height: `${brakeFillPct}%` }"
           />
         </div>
         <span class="mono label">{{ powerLabel }}</span>
@@ -92,6 +101,10 @@ const powerLabel = computed(() => {
         <div class="row">
           <span>DOORS</span>
           <b :class="s.doorsOpen ? 'open' : 'closed'">{{ s.doorsOpen ? 'OPEN' : 'CLOSED' }}</b>
+        </div>
+        <div v-if="s.doorsOpen && !s.departureAllowed" class="row boarding">
+          <span>PEOPLE ON PLATFORM</span>
+          <b>{{ s.platformWaiting }}</b>
         </div>
         <div v-if="s.doorsOpen && s.boardingRemaining > 0" class="row boarding">
           <span>BOARDING</span>
@@ -190,6 +203,17 @@ const powerLabel = computed(() => {
   position: relative;
   overflow: hidden;
 }
+.tick {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.55rem;
+  color: var(--muted);
+  z-index: 1;
+  pointer-events: none;
+}
+.tick.top { top: 2px; }
+.tick.bottom { bottom: 2px; }
 .center {
   position: absolute;
   top: 50%;

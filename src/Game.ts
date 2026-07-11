@@ -89,6 +89,8 @@ export class Game {
     this.cab = new Cab(this.sim.route.track, this.settings.settings.camera, this.renderer.aspect, {
       cabColor: this.locomotiveSpec.cabColor,
       cabColorAccent: this.locomotiveSpec.cabColorAccent,
+      carriageColor: this.locomotiveSpec.carriageColor,
+      carriageAccentColor: this.locomotiveSpec.carriageAccentColor,
     })
     this.scene.scene.add(this.cab.root)
 
@@ -134,7 +136,12 @@ export class Game {
     this.locomotiveId = loco.id
     this.sim = new Simulation(loco, this.routeSpec)
     this.prepareTrain(loco)
-    this.cab?.setCabColors({ cabColor: loco.cabColor, cabColorAccent: loco.cabColorAccent })
+    this.cab?.setCabColors({
+      cabColor: loco.cabColor,
+      cabColorAccent: loco.cabColorAccent,
+      carriageColor: loco.carriageColor,
+      carriageAccentColor: loco.carriageAccentColor,
+    })
     savePreferredLocomotive(id)
   }
 
@@ -204,9 +211,12 @@ export class Game {
       stationId: stationState.station?.id ?? null,
       stopZoneStart: stationState.stopZoneStart,
       stopZoneEnd: stationState.stopZoneEnd,
-      locomotiveLengthMetres: train.locomotiveLengthMetres,
+      trainLengthMetres: this.cab.consist.rearOffsetZ,
+      carriageDoorOffsetsZ: this.cab.consist.doorOffsetsZ,
     })
     this.sound.update(frameDt, tel, train.controls.state, train.brakeEffort, this.sim.environment.preset.rain)
+
+    this.cab.updatePlatformMonitor(this.scene.scene)
 
     this.renderer.render(this.scene.scene, this.cab.camera.camera)
     this.pushSnapshot(frameDt, tel)
@@ -216,16 +226,18 @@ export class Game {
     this.snapshotTimer += frameDt
     if (this.snapshotTimer < SNAPSHOT_INTERVAL) return
     this.snapshotTimer = 0
+    const stationService = this.sim.getStationService()
     const snapshot = buildSnapshot({
       telemetry: tel,
       progress: this.sim.getProgress(),
       controls: this.sim.train.controls,
-      stationService: this.sim.getStationService(),
+      stationService,
       environment: this.sim.environment,
       hovered: this.cab.interaction.hovered?.label ?? '',
       fps: this.loop.fps,
       info: this.renderer.gl.info,
       aiSpeedKmh: (this.sim.aiTrains[0]?.speedMs ?? 0) * MS_TO_KMH,
+      platformWaiting: this.world.getPlatformWaitingCount(stationService.station?.id ?? null),
     })
     this.callbacks.onSnapshot(snapshot)
   }
@@ -317,6 +329,7 @@ export class Game {
     window.removeEventListener('resize', this.onResize)
     this.input.detach(this.canvas)
     this.sound?.dispose()
+    this.cab?.platformMonitor.dispose()
     this.renderer.dispose()
   }
 }

@@ -5,29 +5,25 @@ export type ControllerType = 'xbox' | 'playstation' | 'switch' | 'steamdeck' | '
 
 export interface GamepadConfig {
   deadzone: number
-  lookSensitivity: number
-  cursorSensitivity: number
-  invertLookY: boolean
   triggerThreshold: number
   vibration: boolean
 }
 
 export const DEFAULT_GAMEPAD_CONFIG: GamepadConfig = {
   deadzone: 0.12,
-  lookSensitivity: 2.5,
-  cursorSensitivity: 1.5,
-  invertLookY: false,
   triggerThreshold: 0.05,
   vibration: true,
 }
 
+const STICK_LOOK_SCALE = 2.5
+const THROTTLE_DEADZONE = 0.01
+
 const STANDARD_BUTTON_MAP: Partial<Record<number, ButtonAction>> = {
   0: 'interact', // A / Cross
-  2: 'horn', // X / Square
-  3: 'doors', // Y / Triangle
   8: 'toggleHud', // View / Select
   9: 'pause', // Menu / Start
-  11: 'resetCamera', // R3
+  10: 'horn',
+  11: 'doors',
   12: 'powerUp', // D-Pad Up
   13: 'powerDown', // D-Pad Down
 }
@@ -77,26 +73,19 @@ export class GamepadDevice {
   }
 
   /** Read the live pad, accumulating into axes and resolving button edges. */
-  poll(axes: Record<AxisAction, number>, pressed: Set<ButtonAction>, held: Set<ButtonAction>, dt: number): void {
+  poll(axes: Record<AxisAction, number>, pressed: Set<ButtonAction>, held: Set<ButtonAction>, _dt: number): void {
     const pad = this.pad()
     if (!pad) return
 
-    const lx = this.applyDeadzone(pad.axes[0] ?? 0)
-    const ly = this.applyDeadzone(pad.axes[1] ?? 0)
-    const rx = this.applyDeadzone(pad.axes[2] ?? 0)
-    const ry = this.applyDeadzone(pad.axes[3] ?? 0)
+    const lookX = this.applyDeadzone(pad.axes[0] ?? 0)
+    const lookY = this.applyDeadzone(pad.axes[1] ?? 0)
+    const forwardBack = -this.applyDeadzone(pad.axes[2] ?? 0)
 
-    axes.cursorX = clamp(axes.cursorX + lx * this.config.cursorSensitivity * dt, -1, 1)
-    axes.cursorY = clamp(axes.cursorY - ly * this.config.cursorSensitivity * dt, -1, 1)
-    axes.lookX += rx * this.config.lookSensitivity
-    axes.lookY += (this.config.invertLookY ? -ry : ry) * this.config.lookSensitivity
+    axes.lookX += lookX * STICK_LOOK_SCALE
+    axes.lookY += lookY * STICK_LOOK_SCALE
 
-    const rt = pad.buttons[7]?.value ?? 0
-    const lt = pad.buttons[6]?.value ?? 0
-    if (rt > this.config.triggerThreshold) axes.throttleAxis = rt
-    if (lt > this.config.triggerThreshold) axes.trainBrakeAxis = lt
-
-    if (pad.buttons[10]?.pressed) axes.zoom -= 1 // L3 zoom in
+    if (forwardBack > THROTTLE_DEADZONE) axes.throttleAxis = forwardBack
+    if (forwardBack < -THROTTLE_DEADZONE) axes.trainBrakeAxis = -forwardBack
 
     for (let i = 0; i < pad.buttons.length; i++) {
       const action = STANDARD_BUTTON_MAP[i]

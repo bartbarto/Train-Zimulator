@@ -9,7 +9,6 @@ import HUD from '@/ui/components/HUD.vue'
 import Crosshair from '@/ui/components/Crosshair.vue'
 import DebugOverlay from '@/ui/components/DebugOverlay.vue'
 import PauseMenu from '@/ui/components/PauseMenu.vue'
-import LocomotiveSelector from '@/ui/components/LocomotiveSelector.vue'
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 const store = useSimStore()
@@ -49,7 +48,6 @@ function resume() {
   <div class="overlay">
     <LoadingScreen v-if="phase === 'loading'" :progress="loadProgress" />
     <template v-else>
-      <LocomotiveSelector v-if="game" :game="game" />
       <HUD v-if="showHud" :snapshot="snapshot" />
       <Crosshair v-if="showHud && phase === 'playing'" :label="snapshot.hoveredControl" />
       <DebugOverlay v-if="showDebug" :snapshot="snapshot" />

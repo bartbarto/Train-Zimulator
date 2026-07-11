@@ -30,13 +30,28 @@ export class Gauges {
 
   private buildDial(x: number, color: number): Object3D {
     const dial = new Group()
-    const face = new Mesh(new CircleGeometry(0.13, 32), new MeshStandardMaterial({ color, roughness: 0.6, emissive: 0x0a0c10, emissiveIntensity: 0.4 }))
-    const needle = new Mesh(new PlaneGeometry(0.012, 0.11), new MeshStandardMaterial({ color: 0xffcc44, emissive: 0xffcc44, emissiveIntensity: 1.2 }))
-    needle.position.y = 0.045
+    const faceMat = new MeshStandardMaterial({
+      color,
+      roughness: 0.6,
+      emissive: 0x0a0c10,
+      emissiveIntensity: 0.4,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1,
+    })
+    const face = new Mesh(new CircleGeometry(0.13, 32), faceMat)
+    face.position.z = -0.004
+    const needle = new Mesh(
+      new PlaneGeometry(0.012, 0.11),
+      new MeshStandardMaterial({ color: 0xffcc44, emissive: 0xffcc44, emissiveIntensity: 1.2 }),
+    )
+    needle.position.set(0, 0.045, 0.006)
+    needle.renderOrder = 1
     const pivot = new Group()
     pivot.add(needle)
     dial.add(face, pivot)
-    dial.position.set(x, 1.32, -0.88)
+    // Forward of the console lip so the face does not coplanar-fight the desk.
+    dial.position.set(x, 1.34, -0.82)
     this.group.add(dial)
     return pivot
   }

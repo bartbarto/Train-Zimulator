@@ -70,7 +70,7 @@ async function switchLoco(id: string) {
         <section>
           <h3>Camera</h3>
           <label class="slider">FOV <input type="range" min="50" max="100" step="1" v-model.number="form.camera.fov" @input="apply" /> {{ form.camera.fov }}</label>
-          <label class="slider">Look Sens <input type="range" min="0.2" max="3" step="0.1" v-model.number="form.camera.lookSensitivity" @input="apply" /> {{ form.camera.lookSensitivity.toFixed(1) }}</label>
+          <label class="slider">Look Speed <input type="range" min="0.2" max="6" step="0.1" v-model.number="form.camera.lookSensitivity" @input="apply" /> {{ form.camera.lookSensitivity.toFixed(1) }}</label>
           <label class="check"><input type="checkbox" v-model="form.camera.invertY" @change="apply" /> Invert Y</label>
         </section>
 
@@ -84,8 +84,6 @@ async function switchLoco(id: string) {
         <section>
           <h3>Controller</h3>
           <label class="slider">Deadzone <input type="range" min="0" max="0.4" step="0.02" v-model.number="form.gamepad.deadzone" @input="apply" /></label>
-          <label class="slider">Look Sens <input type="range" min="0.5" max="6" step="0.2" v-model.number="form.gamepad.lookSensitivity" @input="apply" /></label>
-          <label class="check"><input type="checkbox" v-model="form.gamepad.invertLookY" @change="apply" /> Invert Look Y</label>
           <label class="check"><input type="checkbox" v-model="form.gamepad.vibration" @change="apply" /> Vibration</label>
         </section>
 
@@ -99,7 +97,7 @@ async function switchLoco(id: string) {
 
         <section>
           <h3>Locomotive</h3>
-          <p class="hint">Use the selector in the top-right corner, or pick below.</p>
+          <p class="hint">Switch locomotive while paused.</p>
           <div class="loco-list">
             <button
               v-for="loco in locomotiveOptions"

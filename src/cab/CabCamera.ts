@@ -39,6 +39,7 @@ export class CabCamera {
     this.baseFov = config.fov
     this.camera = new PerspectiveCamera(config.fov, aspect, 0.05, 6000)
     this.camera.position.copy(this.seat)
+    this.camera.layers.set(0)
   }
 
   setConfig(config: CameraConfig): void {

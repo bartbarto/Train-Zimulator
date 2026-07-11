@@ -4,7 +4,9 @@ import {
   PerspectiveCamera,
   Scene,
   SRGBColorSpace,
+  Vector4,
   WebGLRenderer,
+  WebGLRenderTarget,
 } from 'three'
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'
 import { FXAAPass } from 'three/addons/postprocessing/FXAAPass.js'
@@ -106,6 +108,35 @@ export class Renderer {
   render(scene: Scene, camera: PerspectiveCamera): void {
     if (this.composer) this.composer.render()
     else this.gl.render(scene, camera)
+  }
+
+  /** Render the scene into an off-screen target (e.g. cab monitor). */
+  renderToTarget(target: WebGLRenderTarget, scene: Scene, camera: PerspectiveCamera): void {
+    const gl = this.gl
+    const prevTarget = gl.getRenderTarget()
+    const prevViewport = gl.getViewport(new Vector4())
+    const prevScissor = gl.getScissor(new Vector4())
+    const prevScissorTest = gl.getScissorTest()
+    const prevToneMapping = gl.toneMapping
+    const prevAutoClear = gl.autoClear
+
+    scene.updateMatrixWorld(true)
+
+    gl.autoClear = true
+    gl.toneMapping = ACESFilmicToneMapping
+    gl.setRenderTarget(target)
+    gl.setViewport(0, 0, target.width, target.height)
+    gl.setScissor(0, 0, target.width, target.height)
+    gl.setScissorTest(false)
+    gl.clear(true, true, true)
+    gl.render(scene, camera)
+
+    gl.setRenderTarget(prevTarget)
+    gl.setViewport(prevViewport)
+    gl.setScissor(prevScissor)
+    gl.setScissorTest(prevScissorTest)
+    gl.toneMapping = prevToneMapping
+    gl.autoClear = prevAutoClear
   }
 
   dispose(): void {

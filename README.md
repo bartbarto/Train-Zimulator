@@ -18,10 +18,10 @@ Click the page once to enable audio.
 
 | Action | Keyboard | Gamepad |
 | --- | --- | --- |
-| Look around | Click to capture, move mouse | Right stick |
-| Power / brake lever | `W` (power) · `S` (brake) | RT (power) · LT (brake) · D-pad Up/Down |
-| Horn | `Space` | X |
-| Doors open/close | `O` | Y |
+| Look around | Click to capture, move mouse | Axis 0 (left/right) · Axis 1 (up/down) |
+| Power / brake lever | `W` (power) · `S` (brake) | Axis 2 (forward/back) · D-pad Up/Down |
+| Horn | `Space` | Button 10 |
+| Doors open/close | `O` | Button 11 |
 | Interact (click control) | `F` or left click | A |
 | Pause / HUD / Debug | `Esc` / `G` / `` ` `` | Menu / View |
 

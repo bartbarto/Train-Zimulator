@@ -1,6 +1,8 @@
 {
   "id": "br218",
   "name": "Class 218 Diesel-Hydraulic",
+  "carriageColor": "0x8c1d18",
+  "carriageAccentColor": "0xd8d8d8",
   "type": "diesel",
   "massTonnes": 79,
   "lengthMetres": 16.4,

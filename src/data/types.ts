@@ -74,6 +74,10 @@ export interface LocomotiveSpec {
   cabColor?: string | number
   /** Accent tint for the cab ceiling and side panels (e.g. `"0xf5d803"`). */
   cabColorAccent?: string | number
+  /** Carriage body tint as a hex string or number; defaults to `cabColor`. */
+  carriageColor?: string | number
+  /** Carriage stripe/accent tint; defaults to `cabColorAccent`. */
+  carriageAccentColor?: string | number
   type: LocomotivePowerType
   /** Locomotive mass in tonnes. */
   massTonnes: number

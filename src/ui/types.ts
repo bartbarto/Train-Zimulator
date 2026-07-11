@@ -27,6 +27,7 @@ export interface UiSnapshot {
   doorsCanOpen: boolean
   departureAllowed: boolean
   boardingRemaining: number
+  platformWaiting: number
   signalAspect: SignalAspect | null
   distanceToSignal: number
   nextStationName: string
@@ -54,6 +55,7 @@ export function createEmptySnapshot(): UiSnapshot {
     doorsCanOpen: false,
     departureAllowed: true,
     boardingRemaining: 0,
+    platformWaiting: 0,
     signalAspect: null,
     distanceToSignal: Infinity,
     nextStationName: '—',

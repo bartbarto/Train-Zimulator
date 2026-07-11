@@ -15,6 +15,7 @@ import {
 } from 'three'
 import type { StationSpec } from '@/data/types'
 import { lerp } from '@/engine/math'
+import { getStopZoneLength } from '@/simulation/stationZone'
 import type { Track } from './Track'
 
 const UP = new Vector3(0, 1, 0)
@@ -24,7 +25,6 @@ const BODY_HEIGHT = 0.72
 const BODY_RADIUS = 0.24
 const HEAD_RADIUS = 0.15
 const STOPPED_SPEED_MS = 0.35
-const HIDE_PAST_LOCO_M = 2.0
 const STRIDE_HEIGHT = 0.045
 const MIN_WALK_SPEED_MS = 3
 const MAX_WALK_SPEED_MS = 6
@@ -39,7 +39,8 @@ export interface StationBoardingState {
   stationId: string | null
   stopZoneStart: number
   stopZoneEnd: number
-  locomotiveLengthMetres: number
+  trainLengthMetres: number
+  carriageDoorOffsetsZ: readonly number[]
 }
 
 interface PassengerAgent {
@@ -60,6 +61,7 @@ interface PassengerAgent {
 interface StationPlatform {
   readonly id: string
   readonly distance: number
+  readonly group: Group
   readonly passengers: PassengerAgent[]
   visitActive: boolean
 }
@@ -79,7 +81,7 @@ export class Stations {
 
     for (const station of stations) {
       const group = new Group()
-      const length = station.platformLength
+      const length = getStopZoneLength(station)
       const slab = new Mesh(new BoxGeometry(2.6, 0.4, length), slabMat)
       slab.position.y = 0.2
       slab.receiveShadow = true
@@ -94,6 +96,7 @@ export class Stations {
       this.platforms.push({
         id: station.id,
         distance: station.distance,
+        group,
         passengers,
         visitActive: false,
       })
@@ -124,9 +127,31 @@ export class Stations {
       const activeStation = boarding && atThisStation
       const trainLocalZ = state.trainDistance - platform.distance
       for (const passenger of platform.passengers) {
-        this.updatePassenger(passenger, dt, activeStation, trainLocalZ, state.locomotiveLengthMetres)
+        this.updatePassenger(passenger, dt, activeStation, trainLocalZ, state.carriageDoorOffsetsZ)
       }
     }
+  }
+
+  /** Passengers still waiting or walking at a station (not yet aboard). */
+  getWaitingPassengerCount(stationId: string | null): number {
+    if (!stationId) return 0
+    const platform = this.platforms.find((p) => p.id === stationId)
+    if (!platform) return 0
+    let waiting = 0
+    for (const passenger of platform.passengers) {
+      if (!passenger.boarded) waiting++
+    }
+    return waiting
+  }
+
+  /** World-space point on the platform face for the cab monitor to aim at. */
+  getPlatformLookTarget(stationId: string | null, out: Vector3): boolean {
+    if (!stationId) return false
+    const platform = this.platforms.find((p) => p.id === stationId)
+    if (!platform) return false
+    platform.group.getWorldPosition(out)
+    out.y += 1.1
+    return true
   }
 
   private buildStationSign(name: string): Group {
@@ -161,10 +186,10 @@ export class Stations {
     dt: number,
     walking: boolean,
     trainLocalZ: number,
-    locomotiveLengthMetres: number,
+    carriageDoorOffsetsZ: readonly number[],
   ): void {
     const person = passenger.group
-    const target = boardingTarget(passenger, trainLocalZ, locomotiveLengthMetres)
+    const target = boardingTarget(passenger, trainLocalZ, carriageDoorOffsetsZ)
 
     if (walking) {
       if (passenger.boarded) {
@@ -234,8 +259,8 @@ export class Stations {
     const passengers = new Group()
     const agents: PassengerAgent[] = []
     const rand = seededRandom(hashSeed(station.id))
-    const count = Math.min(48, Math.max(10, Math.floor(platformLength / 4.2) + Math.floor(rand() * 6)))
-    const margin = 6
+    const count = Math.min(36, Math.max(8, Math.floor(platformLength / 5) + Math.floor(rand() * 4)))
+    const margin = 4
     const zMin = -platformLength / 2 + margin
     const zMax = platformLength / 2 - margin
 
@@ -352,11 +377,22 @@ function createSignTexture(name: string): CanvasTexture {
 function boardingTarget(
   passenger: PassengerAgent,
   trainLocalZ: number,
-  locomotiveLengthMetres: number,
+  carriageDoorOffsetsZ: readonly number[],
 ): { x: number; z: number } {
+  let nearestOffset = carriageDoorOffsetsZ[0] ?? 0
+  let nearestDist = Infinity
+  for (const offset of carriageDoorOffsetsZ) {
+    // Cab +Z is backward along the track; platform +Z is forward — subtract offset.
+    const doorZ = trainLocalZ - offset
+    const dist = Math.abs(doorZ - passenger.homeZ)
+    if (dist < nearestDist) {
+      nearestDist = dist
+      nearestOffset = offset
+    }
+  }
   return {
     x: lerp(passenger.homeX, -0.75, 0.55),
-    z: trainLocalZ - locomotiveLengthMetres - HIDE_PAST_LOCO_M,
+    z: trainLocalZ - nearestOffset,
   }
 }
 
