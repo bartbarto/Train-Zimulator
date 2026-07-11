@@ -51,18 +51,7 @@ export class CabController {
   }
 
   private updateInteraction(s: InputSnapshot): void {
-    const looking = this.input.mouse.isLooking
-    const usingPad = this.input.gamepad.connected
-    let ndcX = 0
-    let ndcY = 0
-    if (usingPad) {
-      ndcX = s.axes.cursorX
-      ndcY = s.axes.cursorY
-    } else if (!looking) {
-      ndcX = this.input.mouse.ndc.x
-      ndcY = this.input.mouse.ndc.y
-    }
-    this.cab.interaction.update(this.cab.camera.camera, ndcX, ndcY)
+    this.cab.interaction.update(this.cab.camera.camera, s.axes.cursorX, s.axes.cursorY)
   }
 
   private updatePower(s: InputSnapshot, dt: number): void {
@@ -123,10 +112,7 @@ export class CabController {
 
   private activateHovered(): void {
     const handle = this.cab.interaction.hovered
-    if (!handle) {
-      if (!this.input.gamepad.connected) this.input.mouse.requestLook()
-      return
-    }
+    if (!handle) return
     this.applyActivation(handle)
     this.pressFeedback(handle)
   }

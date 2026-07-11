@@ -33,14 +33,12 @@ export class InputManager {
 
   attach(element: HTMLElement): void {
     this.keyboard.attach()
-    this.mouse.attach(element)
     this.gamepad.attach()
     element.addEventListener('contextmenu', this.preventContext)
   }
 
   detach(element: HTMLElement): void {
     this.keyboard.detach()
-    this.mouse.detach()
     this.gamepad.detach()
     element.removeEventListener('contextmenu', this.preventContext)
   }
@@ -65,14 +63,10 @@ export class InputManager {
 
     // Collect axes from continuous devices.
     this.keyboard.collectAxes(this.axes)
-    this.mouse.collectAxes(this.axes)
 
-    // Edge events from the mouse (queued clicks).
     this.pressed.clear()
     this.released.clear()
-    this.mouse.collectEdges(this.pressed)
 
-    // Gamepad contributes axes, held and its own edge detection.
     this.gamepad.poll(this.axes, this.pressed, held, dt)
 
     // Keyboard / generic edge detection by diffing held sets.

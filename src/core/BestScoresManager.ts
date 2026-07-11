@@ -1,8 +1,8 @@
 import {
   computeSessionScore,
   isFullCompletion,
-  type SessionResult,
 } from '@/core/SessionScore'
+import type { SessionResult } from '@/simulation/SessionStats'
 
 export interface ComboBestRecord {
   locomotiveId: string

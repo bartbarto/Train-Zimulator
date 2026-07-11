@@ -280,7 +280,6 @@ export class Game {
     if (this.finished) return
     this.finished = true
     this.paused = true
-    this.input.mouse.releaseLook()
     this.sound.silence()
     const passengers = this.world.getBoardedPassengerCount()
     const result = this.sim.getSessionResult(this.routeSpec.name, passengers)
@@ -361,7 +360,6 @@ export class Game {
     if (!this.sessionReady) return
     this.paused = value
     if (value) {
-      this.input.mouse.releaseLook()
       this.sound.silence()
     }
     this.callbacks.onPauseChanged(value)

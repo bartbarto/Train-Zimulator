@@ -4,6 +4,7 @@ import { fileURLToPath, URL } from 'node:url'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: process.env.BASE_PATH ?? '/',
   plugins: [vue()],
   resolve: {
     alias: {

@@ -16,7 +16,7 @@ export const DEFAULT_GAMEPAD_CONFIG: GamepadConfig = {
 }
 
 const STICK_LOOK_SCALE = 2.5
-const THROTTLE_DEADZONE = 0.01
+const CURSOR_SPEED = 1.4
 
 const STANDARD_BUTTON_MAP: Partial<Record<number, ButtonAction>> = {
   0: 'interact', // A / Cross
@@ -39,6 +39,8 @@ export class GamepadDevice {
   private index: number | null = null
   private type: ControllerType = 'generic'
   private prevButtons: boolean[] = []
+  private cursorX = 0
+  private cursorY = 0
 
   constructor(config: GamepadConfig = DEFAULT_GAMEPAD_CONFIG) {
     this.config = config
@@ -74,19 +76,27 @@ export class GamepadDevice {
   }
 
   /** Read the live pad, accumulating into axes and resolving button edges. */
-  poll(axes: Record<AxisAction, number>, pressed: Set<ButtonAction>, held: Set<ButtonAction>, _dt: number): void {
+  poll(axes: Record<AxisAction, number>, pressed: Set<ButtonAction>, held: Set<ButtonAction>, dt: number): void {
     const pad = this.pad()
     if (!pad) return
 
     const lookX = this.applyDeadzone(pad.axes[0] ?? 0)
     const lookY = this.applyDeadzone(pad.axes[1] ?? 0)
-    const forwardBack = -this.applyDeadzone(pad.axes[2] ?? 0)
+    const cursorStickX = this.applyDeadzone(pad.axes[2] ?? 0)
+    const cursorStickY = -this.applyDeadzone(pad.axes[3] ?? 0)
+    const brake = pad.axes[4] ?? 0
+    const throttle = pad.axes[5] ?? 0
 
     axes.lookX += lookX * STICK_LOOK_SCALE
     axes.lookY += lookY * STICK_LOOK_SCALE
 
-    if (forwardBack > THROTTLE_DEADZONE) axes.throttleAxis = forwardBack
-    if (forwardBack < -THROTTLE_DEADZONE) axes.trainBrakeAxis = -forwardBack
+    this.cursorX = clamp(this.cursorX + cursorStickX * CURSOR_SPEED * dt, -1, 1)
+    this.cursorY = clamp(this.cursorY + cursorStickY * CURSOR_SPEED * dt, -1, 1)
+    axes.cursorX = this.cursorX
+    axes.cursorY = this.cursorY
+
+    if (throttle > this.config.triggerThreshold) axes.throttleAxis = throttle
+    if (brake > this.config.triggerThreshold) axes.trainBrakeAxis = brake
 
     for (let i = 0; i < pad.buttons.length; i++) {
       const action = STANDARD_BUTTON_MAP[i]
@@ -118,6 +128,8 @@ export class GamepadDevice {
     if (e.gamepad.index === this.index) {
       this.index = null
       this.prevButtons = []
+      this.cursorX = 0
+      this.cursorY = 0
     }
   }
 }
