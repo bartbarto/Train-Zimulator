@@ -17,7 +17,7 @@ const POWER_RATE = 0.85
 const TRIGGER_THRESHOLD = 0.01
 
 /**
- * Maps input to the three cab controls: combined power lever, horn, doors.
+ * Maps input to cab controls: power lever, horn, reverse, and doors.
  */
 export class CabController {
   private readonly input: InputManager
@@ -101,6 +101,8 @@ export class CabController {
         return this.controls.adjustPowerLever(-0.08)
       case 'horn':
         return this.pulseHorn()
+      case 'reverse':
+        return this.toggleReverse()
       case 'doors':
         this.cab.triggerButtonPress('doors')
         return this.callbacks.onToggleDoors()
@@ -135,6 +137,8 @@ export class CabController {
         return this.controls.adjustPowerLever(0.08)
       case 'horn':
         return this.pulseHorn()
+      case 'reverse':
+        return this.toggleReverse()
       case 'doors':
         return this.callbacks.onToggleDoors()
     }
@@ -143,6 +147,11 @@ export class CabController {
   private pulseHorn(): void {
     this.hornPulse = true
     gsap.delayedCall(0.8, () => (this.hornPulse = false))
+  }
+
+  private toggleReverse(): void {
+    if (!this.controls.toggleReverser()) return
+    this.cab.triggerButtonPress('reverse')
   }
 
   private pressFeedback(h: CabControlHandle): void {

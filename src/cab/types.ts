@@ -1,7 +1,7 @@
 import type { Object3D } from 'three'
 
 /** Identifiers for the simplified cab controls. */
-export type ControlId = 'power' | 'horn' | 'doors'
+export type ControlId = 'power' | 'horn' | 'reverse' | 'doors'
 
 export type ControlKind = 'lever' | 'button' | 'toggle'
 

@@ -14,7 +14,7 @@ defineProps<{ progress: number }>()
       <div class="fill" :style="{ width: `${Math.round(progress * 100)}%` }" />
     </div>
     <div class="pct mono">{{ Math.round(progress * 100) }}%</div>
-    <div class="hint">W / S — power &amp; brake · Space — horn · O — doors · Click controls to interact</div>
+    <div class="hint">W / S — power &amp; brake · Space — horn · R — reverse · O — doors · Click controls to interact</div>
   </div>
 </template>
 

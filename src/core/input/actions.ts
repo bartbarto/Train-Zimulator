@@ -16,6 +16,7 @@ export type ButtonAction =
   | 'powerDown'
   | 'interact'
   | 'horn'
+  | 'reverse'
   | 'doors'
   | 'resetCamera'
   | 'toggleHud'
@@ -37,6 +38,7 @@ export const ALL_BUTTON_ACTIONS: readonly ButtonAction[] = [
   'powerDown',
   'interact',
   'horn',
+  'reverse',
   'doors',
   'resetCamera',
   'toggleHud',

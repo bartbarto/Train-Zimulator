@@ -121,7 +121,7 @@ async function switchLoco(id: string) {
         </section>
       </div>
 
-      <footer class="mono">W/S power &amp; brake · Space horn · O doors · Esc resume · ` debug</footer>
+      <footer class="mono">W/S power &amp; brake · Space horn · R reverse · O doors · Esc resume · ` debug</footer>
     </div>
   </div>
 </template>

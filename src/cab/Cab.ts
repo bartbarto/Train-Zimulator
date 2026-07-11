@@ -88,6 +88,7 @@ export class Cab {
     }
     this.syncButtons(dt, state)
     this.syncDoorButton(state)
+    this.syncReverseButton(state)
     this.consist.updateDoors(dt, state.doorsOpen)
   }
 
@@ -109,6 +110,13 @@ export class Cab {
     if (!door) return
     const mat = (door.object as Mesh).material as MeshStandardMaterial
     if (mat?.emissive) mat.emissiveIntensity = state.doorsOpen ? 0.5 : 0
+  }
+
+  private syncReverseButton(state: ControlState): void {
+    const reverse = this.handles.find((h) => h.id === 'reverse')
+    if (!reverse) return
+    const mat = (reverse.object as Mesh).material as MeshStandardMaterial
+    if (mat?.emissive) mat.emissiveIntensity = state.reverser < 0 ? 0.5 : 0
   }
 
   updateGauges(dt: number, speedKmh: number, maxSpeedKmh: number, brakePipeBar: number, maxBar: number): void {

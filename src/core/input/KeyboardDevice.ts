@@ -7,6 +7,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBindings = {
   KeyW: 'powerUp',
   KeyS: 'powerDown',
   Space: 'horn',
+  KeyR: 'reverse',
   KeyO: 'doors',
   KeyF: 'interact',
   Escape: 'pause',

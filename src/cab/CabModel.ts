@@ -154,7 +154,7 @@ function createAccentMaterial(color: number): MeshStandardMaterial {
 }
 
 /**
- * Minimal cab with three controls: a combined power/brake lever, horn, and doors.
+ * Minimal cab with four controls: a combined power/brake lever, reverse, horn, and doors.
  */
 export class CabModel {
   readonly group = new Group()
@@ -276,6 +276,7 @@ export class CabModel {
   }
 
   private buildButtons(): void {
+    this.addButton('reverse', 'Reverse', -0.85, 1.26, -0.6, 0xcc3322, 'toggle')
     this.addButton('horn', 'Horn', -0.45, 1.26, -0.6, 0x2255cc, 'button')
     this.addButton('doors', 'Doors', 0.45, 1.26, -0.6, 0x99bb55, 'toggle')
   }

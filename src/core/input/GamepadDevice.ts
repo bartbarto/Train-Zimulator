@@ -20,6 +20,7 @@ const THROTTLE_DEADZONE = 0.01
 
 const STANDARD_BUTTON_MAP: Partial<Record<number, ButtonAction>> = {
   0: 'interact', // A / Cross
+  7: 'reverse',
   8: 'toggleHud', // View / Select
   9: 'pause', // Menu / Start
   10: 'horn',

@@ -74,6 +74,7 @@ export function computeAutoBrake(
     station &&
     !doorsOpen &&
     tractionPolicy !== 'inch' &&
+    tractionPolicy !== 'recover' &&
     tractionPolicy !== 'full' &&
     isInStopZone(station, distance)
   ) {

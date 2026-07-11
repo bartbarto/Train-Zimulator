@@ -13,7 +13,7 @@ const PASSED_STATION_GRACE_METRES = 80
 const INCH_ZONE_END_MARGIN_M = 1.0
 
 export type StationPhase = 'approach' | 'stopRequired' | 'boarding' | 'readyToDepart' | 'departed'
-export type StationTractionPolicy = 'full' | 'inch' | 'blocked'
+export type StationTractionPolicy = 'full' | 'inch' | 'recover' | 'blocked'
 
 export interface StationServiceState {
   phase: StationPhase
@@ -147,8 +147,13 @@ export class StationService {
     if (!station) return 'full'
     if (this.canDepart()) return 'full'
     if (this.phase === 'approach' || this.phase === 'departed') return 'full'
+    if (this.hasOvershot(station, distance)) return 'recover'
     if (this.canInchForward(station, distance)) return 'inch'
     return 'blocked'
+  }
+
+  private hasOvershot(station: StationSpec, distance: number): boolean {
+    return !this.served.has(station.id) && distance > getStopZoneEnd(station)
   }
 
   private canInchForward(station: StationSpec, distance: number): boolean {
@@ -199,7 +204,7 @@ export class StationService {
 
   private getStopZoneMessage(station: StationSpec, distance: number): string {
     if (distance < getStopZoneStart(station)) return `Move forward into ${station.name} stop zone`
-    if (distance > getStopZoneEnd(station)) return `Overshot ${station.name} stop zone`
+    if (distance > getStopZoneEnd(station)) return `Overshot ${station.name} — reverse into stop zone`
     return `Open doors for ${station.name}`
   }
 }

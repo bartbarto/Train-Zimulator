@@ -67,6 +67,7 @@ body,
   overflow: hidden;
   background: var(--bg);
   color: var(--text);
+  user-select: none;
 }
 
 #app {

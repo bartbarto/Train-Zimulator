@@ -57,7 +57,7 @@ export class Train {
   /** Multiplier applied to wheel/rail adhesion (1 = dry, lower = wet/ice). */
   railAdhesionFactor = 1
   /** Passenger/service interlock; false cuts traction but still allows braking. */
-  tractionMode: 'full' | 'inch' | 'blocked' = 'full'
+  tractionMode: 'full' | 'inch' | 'recover' | 'blocked' = 'full'
   autoBrake: AutoBrakeState = {
     active: false,
     demand: 0,
@@ -124,9 +124,20 @@ export class Train {
     if (this.tractionMode === 'full') return effort
 
     // Inch mode: forward creep only, capped to a walking pace.
-    if (c.reverser <= 0 || c.throttle <= 0) return 0
-    if (this.physics.speed >= Train.INCH_SPEED_CAP_MS) return 0
-    return effort
+    if (this.tractionMode === 'inch') {
+      if (c.reverser <= 0 || c.throttle <= 0) return 0
+      if (this.physics.speed >= Train.INCH_SPEED_CAP_MS) return 0
+      return effort
+    }
+
+    // Recover mode: reverse creep back into the stop zone after an overshoot.
+    if (this.tractionMode === 'recover') {
+      if (c.reverser >= 0 || c.throttle <= 0) return 0
+      if (this.physics.speed <= -Train.INCH_SPEED_CAP_MS) return 0
+      return effort
+    }
+
+    return 0
   }
 
   private computeDynamicBrakeForce(): number {

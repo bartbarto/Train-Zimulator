@@ -130,6 +130,13 @@ export class Controls {
     this.state.reverser = value
   }
 
+  /** Toggle between forward and reverse. Returns false if throttle blocks the change. */
+  toggleReverser(): boolean {
+    if (this.state.throttle > 0.02) return false
+    this.state.reverser = this.state.reverser < 0 ? 1 : -1
+    return true
+  }
+
   cycleHeadlights(): void {
     this.state.headlights = ((this.state.headlights + 1) % 3) as MultiState
   }
