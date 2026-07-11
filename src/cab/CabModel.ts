@@ -52,6 +52,8 @@ export interface CabColorOptions {
   carriageDoorColor?: string | number
   /** Roof tint for cab ceiling and carriage roofs; falls back to `carriageColor` then `cabColor`. */
   roofColor?: string | number
+  /** Carriage window frame tint; falls back to `carriageColor` then `cabColor`. */
+  windowFrameColor?: string | number
 }
 
 function parseHexColor(value: string | number | undefined | null): number | null {
@@ -121,6 +123,15 @@ export function resolveCarriageDoorColor(
 
 /** Raw roof colour from JSON (no tone derivation). */
 export function resolveRoofColor(
+  color?: string | number,
+  fallback?: string | number,
+  secondFallback?: string | number,
+): number {
+  return parseHexColor(color) ?? parseHexColor(fallback) ?? parseHexColor(secondFallback) ?? DEFAULT_DARK
+}
+
+/** Raw window frame colour from JSON (no tone derivation). */
+export function resolveWindowFrameColor(
   color?: string | number,
   fallback?: string | number,
   secondFallback?: string | number,

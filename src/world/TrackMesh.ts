@@ -22,6 +22,8 @@ const BALLAST_HALF_WIDTH = 2.6
 const EMBANKMENT_DROP = 60
 
 const UP = new Vector3(0, 1, 0)
+/** Straight visual continuation of the line before the route origin (metres). */
+const LEAD_IN_METRES = 160
 
 interface Frame {
   pos: Vector3
@@ -50,9 +52,23 @@ export class TrackMesh {
   }
 
   private sampleFrames(track: Track, spacing: number): Frame[] {
-    const count = Math.max(2, Math.floor(track.length / spacing))
     const frames: Frame[] = []
     const tangent = new Vector3()
+    const start = new Vector3()
+    const backward = new Vector3()
+    track.curve.getPointAt(0, start)
+    track.curve.getTangentAt(0, tangent)
+    backward.copy(tangent).normalize().negate()
+    const startRight = new Vector3().crossVectors(tangent, UP).normalize()
+
+    for (let d = -LEAD_IN_METRES; d < 0; d += spacing) {
+      frames.push({
+        pos: start.clone().addScaledVector(backward, -d),
+        right: startRight.clone(),
+      })
+    }
+
+    const count = Math.max(2, Math.floor(track.length / spacing))
     for (let i = 0; i <= count; i++) {
       const d = (i / count) * track.length
       const pos = new Vector3()
@@ -126,7 +142,9 @@ export class TrackMesh {
   }
 
   private buildSleepers(track: Track): InstancedMesh {
-    const count = Math.max(2, Math.floor(track.length / SLEEPER_SPACING))
+    const routeCount = Math.max(2, Math.floor(track.length / SLEEPER_SPACING))
+    const leadCount = Math.max(1, Math.floor(LEAD_IN_METRES / SLEEPER_SPACING))
+    const count = leadCount + routeCount
     const geo = new BoxGeometry(2.6, 0.16, 0.26)
     const mat = new MeshStandardMaterial({ color: 0x4b4640, roughness: 0.95 })
     const mesh = new InstancedMesh(geo, mat, count)
@@ -134,13 +152,31 @@ export class TrackMesh {
 
     const pos = new Vector3()
     const tangent = new Vector3()
+    const backward = new Vector3()
     const right = new Vector3()
     const quat = new Quaternion()
     const matrix = new Matrix4()
     const scale = new Vector3(1, 1, 1)
     const lookM = new Matrix4()
-    for (let i = 0; i < count; i++) {
-      const u = i / count
+    const start = new Vector3()
+    track.curve.getPointAt(0, start)
+    track.curve.getTangentAt(0, tangent)
+    backward.copy(tangent).normalize().negate()
+    right.crossVectors(tangent, UP).normalize()
+    lookM.makeBasis(right, UP, tangent.clone().negate())
+    quat.setFromRotationMatrix(lookM)
+
+    let index = 0
+    for (let i = 0; i < leadCount; i++) {
+      const back = LEAD_IN_METRES - i * SLEEPER_SPACING
+      pos.copy(start).addScaledVector(backward, back)
+      pos.y -= 0.12
+      matrix.compose(pos, quat, scale)
+      mesh.setMatrixAt(index++, matrix)
+    }
+
+    for (let i = 0; i < routeCount; i++) {
+      const u = i / routeCount
       track.curve.getPointAt(u, pos)
       track.curve.getTangentAt(u, tangent)
       right.crossVectors(tangent, UP).normalize()
@@ -148,7 +184,7 @@ export class TrackMesh {
       lookM.makeBasis(right, UP, tangent.clone().negate())
       quat.setFromRotationMatrix(lookM)
       matrix.compose(pos, quat, scale)
-      mesh.setMatrixAt(i, matrix)
+      mesh.setMatrixAt(index++, matrix)
     }
     mesh.instanceMatrix.needsUpdate = true
     return mesh

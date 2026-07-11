@@ -1,4 +1,4 @@
-import { BoxGeometry, Group, Mesh, MeshStandardMaterial } from 'three'
+import { BoxGeometry, ExtrudeGeometry, Group, Mesh, MeshStandardMaterial, Shape } from 'three'
 import { damp } from '@/engine/math'
 import type { CabColorOptions } from './CabModel'
 import {
@@ -6,6 +6,7 @@ import {
   resolveCarriageColor,
   resolveCarriageDoorColor,
   resolveRoofColor,
+  resolveWindowFrameColor,
 } from './CabModel'
 
 export const CARRIAGE_COUNT = 3
@@ -39,6 +40,17 @@ const DOOR_OPEN_OUTWARD = 0.1
 /** How far each leaf slides along the carriage when fully open. */
 const DOOR_OPEN_APART = 0.3
 
+const WINDOW_COLOR = 0x9ecae8
+const WINDOW_WIDTH = 0.52
+const WINDOW_HEIGHT = 0.55
+const WINDOW_DEPTH = 0.005
+const WINDOW_RADIUS = 0.07
+const WINDOW_STANDOFF = 0.022
+const WINDOW_FRAME_BORDER = 0.055
+const WINDOW_FRAME_DEPTH = 0.01
+const FRAME_METALNESS = 0.15
+const FRAME_ROUGHNESS = 0.75
+
 interface DoorLeaf {
   readonly mesh: Mesh
   readonly closedX: number
@@ -60,11 +72,30 @@ export class TrainConsist {
   private accent!: MeshStandardMaterial
   private door!: MeshStandardMaterial
   private roof!: MeshStandardMaterial
+  private windowFrame!: MeshStandardMaterial
+  private readonly windowMat: MeshStandardMaterial
+  private readonly windowGeo: ExtrudeGeometry
+  private readonly windowFrameGeo: ExtrudeGeometry
   private readonly doorLeaves: DoorLeaf[] = []
   private doorOpenAmount = 0
 
   constructor(colors: CabColorOptions = {}) {
     this.doorOffsetsZ = []
+    this.windowGeo = createWindowGeometry(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_DEPTH, WINDOW_RADIUS)
+    this.windowFrameGeo = createWindowFrameGeometry(
+      WINDOW_WIDTH,
+      WINDOW_HEIGHT,
+      WINDOW_RADIUS,
+      WINDOW_FRAME_BORDER,
+      WINDOW_FRAME_DEPTH,
+    )
+    this.windowMat = new MeshStandardMaterial({
+      color: WINDOW_COLOR,
+      metalness: 0.08,
+      roughness: 0.22,
+      toneMapped: false,
+      fog: false,
+    })
     this.build(colors)
   }
 
@@ -77,11 +108,12 @@ export class TrainConsist {
   }
 
   setColors(colors: CabColorOptions = {}): void {
-    const { bodyHex, accentHex, doorHex, roofHex } = resolveConsistColors(colors)
-    this.body.color.setHex(bodyHex)
-    this.accent.color.setHex(accentHex)
-    this.door.color.setHex(doorHex)
-    this.roof.color.setHex(roofHex)
+    const resolved = resolveConsistColors(colors)
+    this.body.color.setHex(resolved.bodyHex)
+    this.accent.color.setHex(resolved.accentHex)
+    this.door.color.setHex(resolved.doorHex)
+    this.roof.color.setHex(resolved.roofHex)
+    this.windowFrame.color.setHex(resolved.windowFrameHex)
   }
 
   /** Animate platform-side door leaves open (outward + apart) or closed. */
@@ -96,23 +128,23 @@ export class TrainConsist {
   }
 
   private build(colors: CabColorOptions): void {
-    const { bodyHex, accentHex, doorHex, roofHex } = resolveConsistColors(colors)
+    const resolved = resolveConsistColors(colors)
     this.body = new MeshStandardMaterial({
-      color: bodyHex,
+      color: resolved.bodyHex,
       metalness: BODY_METALNESS,
       roughness: BODY_ROUGHNESS,
       toneMapped: false,
       fog: false,
     })
     this.accent = new MeshStandardMaterial({
-      color: accentHex,
+      color: resolved.accentHex,
       metalness: ACCENT_METALNESS,
       roughness: ACCENT_ROUGHNESS,
       toneMapped: false,
       fog: false,
     })
     this.door = new MeshStandardMaterial({
-      color: doorHex,
+      color: resolved.doorHex,
       metalness: DOOR_METALNESS,
       roughness: DOOR_ROUGHNESS,
       toneMapped: false,
@@ -122,9 +154,16 @@ export class TrainConsist {
       polygonOffsetUnits: -2,
     })
     this.roof = new MeshStandardMaterial({
-      color: roofHex,
+      color: resolved.roofHex,
       metalness: ROOF_METALNESS,
       roughness: ROOF_ROUGHNESS,
+      toneMapped: false,
+      fog: false,
+    })
+    this.windowFrame = new MeshStandardMaterial({
+      color: resolved.windowFrameHex,
+      metalness: FRAME_METALNESS,
+      roughness: FRAME_ROUGHNESS,
       toneMapped: false,
       fog: false,
     })
@@ -165,6 +204,8 @@ export class TrainConsist {
     nose.position.set(0, h * 0.48 + 0.15, -d / 2 - 0.22)
     body.add(nose)
 
+    this.addWindows(body, w / 2, h, d, d * 0.08)
+
     // this.addDoubleDoors(body, w / 2, 0.95, d * 0.08)
 
     body.position.z = centreZ
@@ -190,6 +231,8 @@ export class TrainConsist {
     const stripe = new Mesh(new BoxGeometry(w + 0.001, 0.38, d - 0.2), this.accent)
     stripe.position.y = h * 0.62 + 0.15
     body.add(stripe)
+
+    this.addWindows(body, w / 2 + 0.1, h, d, 0)
 
     this.addDoubleDoors(body, w / 2 + 0.1, 0.95, 0)
 
@@ -228,6 +271,41 @@ export class TrainConsist {
       })
     }
   }
+
+  private addWindows(
+    parent: Group,
+    halfWidth: number,
+    bodyHeight: number,
+    bodyDepth: number,
+    doorCenterZ: number,
+  ): void {
+    const winY = bodyHeight * 0.7
+    const margin = 0.5
+    const doorClear = 1.5
+    const spacing = 1.12
+    const zStart = -bodyDepth / 2 + margin
+    const zEnd = bodyDepth / 2 - margin
+
+    for (let z = zStart; z <= zEnd + 0.001; z += spacing) {
+      if (Math.abs(z - doorCenterZ) < doorClear) continue
+      for (const side of [-1, 1] as const) {
+        const outward = side
+        const mountX = outward * (halfWidth + WINDOW_STANDOFF + WINDOW_DEPTH * 0.5)
+
+        const frame = new Mesh(this.windowFrameGeo, this.windowFrame)
+        frame.rotation.y = (side * Math.PI) / 2
+        frame.position.set(mountX - outward * 0.006, winY, z)
+        frame.renderOrder = 2
+        parent.add(frame)
+
+        const glass = new Mesh(this.windowGeo, this.windowMat)
+        glass.rotation.y = (side * Math.PI) / 2
+        glass.position.set(mountX, winY, z)
+        glass.renderOrder = 3
+        parent.add(glass)
+      }
+    }
+  }
 }
 
 function resolveConsistColors(colors: CabColorOptions): {
@@ -235,11 +313,77 @@ function resolveConsistColors(colors: CabColorOptions): {
   accentHex: number
   doorHex: number
   roofHex: number
+  windowFrameHex: number
 } {
   return {
     bodyHex: resolveCarriageColor(colors.carriageColor, colors.cabColor),
     accentHex: resolveCarriageAccentColor(colors.carriageAccentColor, colors.cabColorAccent),
     doorHex: resolveCarriageDoorColor(colors.carriageDoorColor, colors.carriageColor, colors.cabColor),
     roofHex: resolveRoofColor(colors.roofColor, colors.carriageColor, colors.cabColor),
+    windowFrameHex: resolveWindowFrameColor(
+      colors.windowFrameColor,
+      colors.carriageColor,
+      colors.cabColor,
+    ),
   }
+}
+
+function createWindowGeometry(width: number, height: number, depth: number, radius: number): ExtrudeGeometry {
+  return new ExtrudeGeometry(roundedRectShape(width, height, radius), {
+    depth,
+    bevelEnabled: false,
+  })
+}
+
+function createWindowFrameGeometry(
+  innerWidth: number,
+  innerHeight: number,
+  innerRadius: number,
+  border: number,
+  depth: number,
+): ExtrudeGeometry {
+  const outer = roundedRectShape(
+    innerWidth + border * 2,
+    innerHeight + border * 2,
+    innerRadius + border,
+    false,
+  )
+  outer.holes.push(roundedRectShape(innerWidth, innerHeight, innerRadius, true))
+  return new ExtrudeGeometry(outer, { depth, bevelEnabled: false })
+}
+
+/** `clockwise` must be opposite for outer vs hole paths in Three.js. */
+function roundedRectShape(width: number, height: number, radius: number, clockwise = false): Shape {
+  const w2 = width / 2
+  const h2 = height / 2
+  const r = Math.min(radius, w2, h2)
+  const x0 = -w2
+  const y0 = -h2
+  const x1 = w2
+  const y1 = h2
+  const shape = new Shape()
+
+  if (!clockwise) {
+    shape.moveTo(x0 + r, y0)
+    shape.lineTo(x1 - r, y0)
+    shape.quadraticCurveTo(x1, y0, x1, y0 + r)
+    shape.lineTo(x1, y1 - r)
+    shape.quadraticCurveTo(x1, y1, x1 - r, y1)
+    shape.lineTo(x0 + r, y1)
+    shape.quadraticCurveTo(x0, y1, x0, y1 - r)
+    shape.lineTo(x0, y0 + r)
+    shape.quadraticCurveTo(x0, y0, x0 + r, y0)
+    return shape
+  }
+
+  shape.moveTo(x0 + r, y0)
+  shape.quadraticCurveTo(x0, y0, x0, y0 + r)
+  shape.lineTo(x0, y1 - r)
+  shape.quadraticCurveTo(x0, y1, x0 + r, y1)
+  shape.lineTo(x1 - r, y1)
+  shape.quadraticCurveTo(x1, y1, x1, y1 - r)
+  shape.lineTo(x1, y0 + r)
+  shape.quadraticCurveTo(x1, y0, x1 - r, y0)
+  shape.lineTo(x0 + r, y0)
+  return shape
 }

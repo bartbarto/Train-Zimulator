@@ -36,7 +36,7 @@ export class PlatformMonitor {
   private readonly camLocalPos = new Vector3()
   private readonly camLocalLook = new Vector3()
   private readonly worldLook = new Vector3()
-  private readonly monitorFill = new HemisphereLight(0xffffff, 0x666666, 1.35)
+  private readonly monitorFill = new HemisphereLight(0xffffff, 0x666666, 1)
 
   constructor() {
     this.canvas = document.createElement('canvas')
@@ -48,7 +48,7 @@ export class PlatformMonitor {
     this.monitorGl.setSize(TEXTURE_W, TEXTURE_H, false)
     this.monitorGl.outputColorSpace = SRGBColorSpace
     this.monitorGl.toneMapping = ACESFilmicToneMapping
-    this.monitorGl.toneMappingExposure = 1.45
+    this.monitorGl.toneMappingExposure = 1.1
 
     this.texture = new CanvasTexture(this.canvas)
     this.texture.colorSpace = SRGBColorSpace
@@ -58,7 +58,7 @@ export class PlatformMonitor {
     this.screenMat = new MeshBasicMaterial({
       map: this.texture,
       color: 0xffffff,
-      toneMapped: false,
+      // toneMapped: false,
       fog: false,
     })
 

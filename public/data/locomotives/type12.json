@@ -7,6 +7,7 @@
   "carriageAccentColor": "0xf5d803",
   "carriageDoorColor": "0x005613",
   "roofColor": "0x005613",
+  "windowFrameColor": "0x003d0e",
   "type": "steam",
   "massTonnes": 117,
   "lengthMetres": 23.3,

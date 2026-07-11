@@ -5,6 +5,7 @@
   "carriageAccentColor": "0xd8d8d8",
   "carriageDoorColor": "0x2a2a2a",
   "roofColor": "0x4a4a4a",
+  "windowFrameColor": "0x1a1a1a",
   "type": "diesel",
   "massTonnes": 79,
   "lengthMetres": 16.4,

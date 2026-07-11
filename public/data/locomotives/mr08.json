@@ -7,6 +7,7 @@
   "carriageAccentColor": "0xf5d803",
   "carriageDoorColor": "0x840505",
   "roofColor": "0x555555",
+  "windowFrameColor": "0x333333",
   "type": "electric",
   "massTonnes": 147,
   "lengthMetres": 79.9,

@@ -82,6 +82,8 @@ export interface LocomotiveSpec {
   carriageDoorColor?: string | number
   /** Roof tint for cab ceiling and carriage roofs; defaults to `carriageColor`. */
   roofColor?: string | number
+  /** Carriage window frame tint; defaults to `carriageColor`. */
+  windowFrameColor?: string | number
   type: LocomotivePowerType
   /** Locomotive mass in tonnes. */
   massTonnes: number
