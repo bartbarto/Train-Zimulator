@@ -15,6 +15,7 @@ export interface SnapshotInput {
   stationService: StationServiceState
   environment: Environment
   hoveredControlId: ControlId | ''
+  touchControls: boolean
   fps: number
   info: WebGLInfo
   aiSpeedKmh: number
@@ -50,6 +51,7 @@ export function buildSnapshot(i: SnapshotInput): UiSnapshot {
     weather: i.environment.weather,
     timeOfDay: i.environment.timeOfDay,
     hoveredControlId: i.hoveredControlId,
+    touchControls: i.touchControls,
     objective,
     autoBrakeActive: tel.autoBrake.active,
     autoBrakeDemand: tel.autoBrake.demand,

@@ -10,6 +10,8 @@ import LoadingScreen from '@/ui/components/LoadingScreen.vue'
 import MainMenu from '@/ui/components/MainMenu.vue'
 import HUD from '@/ui/components/HUD.vue'
 import Crosshair from '@/ui/components/Crosshair.vue'
+import LookJoystick from '@/ui/components/LookJoystick.vue'
+import TouchPauseButton from '@/ui/components/TouchPauseButton.vue'
 import DebugOverlay from '@/ui/components/DebugOverlay.vue'
 import PauseMenu from '@/ui/components/PauseMenu.vue'
 import EndOfLineScreen from '@/ui/components/EndOfLineScreen.vue'
@@ -89,6 +91,14 @@ function returnToMenu(): void {
   store.setSessionCompletion(null)
   store.setPhase('menu')
 }
+
+function pause(): void {
+  game.value?.togglePause()
+}
+
+function onTouchLook(x: number, y: number): void {
+  game.value?.setTouchLook(x, y)
+}
 </script>
 
 <template>
@@ -103,9 +113,26 @@ function returnToMenu(): void {
     />
     <template v-else-if="phase === 'playing' || phase === 'paused'">
       <HUD v-if="showHud" :snapshot="snapshot" />
-      <Crosshair v-if="showHud && phase === 'playing'" :control-id="snapshot.hoveredControlId" />
+      <Crosshair
+        v-if="showHud && phase === 'playing' && !snapshot.touchControls"
+        :control-id="snapshot.hoveredControlId"
+      />
+      <LookJoystick
+        v-if="showHud && phase === 'playing' && snapshot.touchControls"
+        @look="onTouchLook"
+      />
+      <TouchPauseButton
+        v-if="showHud && phase === 'playing' && snapshot.touchControls"
+        @pause="pause"
+      />
       <DebugOverlay v-if="showDebug" :snapshot="snapshot" />
-      <PauseMenu v-if="phase === 'paused' && game" :game="game" :settings="settings" @resume="resume" />
+      <PauseMenu
+        v-if="phase === 'paused' && game"
+        :game="game"
+        :settings="settings"
+        @resume="resume"
+        @exit="returnToMenu"
+      />
     </template>
     <EndOfLineScreen
       v-else-if="phase === 'finished' && sessionCompletion"

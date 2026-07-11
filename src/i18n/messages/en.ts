@@ -58,10 +58,13 @@ export const en = {
     boarding: 'Boarding',
     horn: 'Horn',
     interactHint: 'LMB / A',
+    touchLook: 'Look',
+    touchPause: 'Pause',
   },
   pause: {
     title: 'Paused',
     resume: 'Resume',
+    exitToMenu: 'Exit to menu',
     graphics: 'Graphics',
     camera: 'Camera',
     audio: 'Audio',

@@ -343,6 +343,7 @@ export class Game {
       stationService,
       environment: this.sim.environment,
       hoveredControlId: this.cab.interaction.hovered?.id ?? '',
+      touchControls: this.input.touchMode,
       fps: this.loop.fps,
       info: this.renderer.gl.info,
       aiSpeedKmh: (this.sim.aiTrains[0]?.speedMs ?? 0) * MS_TO_KMH,
@@ -384,6 +385,11 @@ export class Game {
 
   get isDebugVisible(): boolean {
     return this.debugVisible
+  }
+
+  /** Feed the on-screen look stick while touch controls are active. */
+  setTouchLook(x: number, y: number): void {
+    this.input.touch.setLook(x, y)
   }
 
   setWeather(kind: WeatherKind): void {

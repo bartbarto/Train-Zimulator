@@ -32,19 +32,30 @@ export class Interaction {
     }
   }
 
-  /** Update hover state from the camera and normalised cursor coordinates. */
-  update(camera: PerspectiveCamera, ndcX: number, ndcY: number): void {
+  /** Raycast the cursor against cab controls; returns the topmost hit, if any. */
+  pick(camera: PerspectiveCamera, ndcX: number, ndcY: number): CabControlHandle | null {
     this.pointer.set(ndcX, ndcY)
     this.raycaster.setFromCamera(this.pointer, camera)
     const targets = this.handles.map((h) => h.object)
     const hits = this.raycaster.intersectObjects(targets, false)
-    const next = hits.length > 0 ? this.byObject.get(hits[0].object) ?? null : null
+    return hits.length > 0 ? this.byObject.get(hits[0].object) ?? null : null
+  }
+
+  /** Update hover state from the camera and normalised cursor coordinates. */
+  update(camera: PerspectiveCamera, ndcX: number, ndcY: number): void {
+    const next = this.pick(camera, ndcX, ndcY)
 
     if (next !== this.hovered) {
       if (this.hovered) this.setHighlight(this.hovered, false)
       if (next) this.setHighlight(next, true)
       this.hovered = next
     }
+  }
+
+  clearHover(): void {
+    if (!this.hovered) return
+    this.setHighlight(this.hovered, false)
+    this.hovered = null
   }
 
   private setHighlight(handle: CabControlHandle, on: boolean): void {

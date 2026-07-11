@@ -8,7 +8,7 @@ import type { SettingsManager } from '@/core/SettingsManager'
 import type { WeatherKind } from '@/simulation/Environment'
 
 const props = defineProps<{ game: Game; settings: SettingsManager }>()
-const emit = defineEmits<{ resume: [] }>()
+const emit = defineEmits<{ resume: []; exit: [] }>()
 
 const store = useSimStore()
 const { locomotiveId, locomotiveOptions, locomotiveSwitching } = storeToRefs(store)
@@ -58,7 +58,10 @@ async function switchLoco(id: string) {
     <div class="menu menu-surface">
       <header class="menu-header">
         <h2>{{ t('pause.title') }}</h2>
-        <button class="primary" @click="emit('resume')">{{ t('pause.resume') }}</button>
+        <div class="header-actions">
+          <button @click="emit('exit')">{{ t('pause.exitToMenu') }}</button>
+          <button class="primary" @click="emit('resume')">{{ t('pause.resume') }}</button>
+        </div>
       </header>
 
       <div class="cols">
@@ -199,5 +202,10 @@ footer {
   background: var(--surface-muted);
   color: var(--muted);
   font-size: 0.75rem;
+}
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 </style>

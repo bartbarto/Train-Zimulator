@@ -40,6 +40,7 @@ export interface UiSnapshot {
   weather: WeatherKind
   timeOfDay: number
   hoveredControlId: ControlId | ''
+  touchControls: boolean
   objective: string
   autoBrakeActive: boolean
   autoBrakeDemand: number
@@ -76,6 +77,7 @@ export function createEmptySnapshot(): UiSnapshot {
     weather: 'clear',
     timeOfDay: 43200,
     hoveredControlId: '',
+    touchControls: false,
     objective: '',
     autoBrakeActive: false,
     autoBrakeDemand: 0,

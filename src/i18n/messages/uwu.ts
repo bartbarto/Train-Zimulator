@@ -60,10 +60,13 @@ export const uwu: Messages = {
     boarding: 'Getting on~ 🚶‍♀️',
     horn: 'Beep beep!! 🎺',
     interactHint: 'LMB / A ✨',
+    touchLook: 'Wook awound~ 👀',
+    touchPause: 'Paws~ 🐾',
   },
   pause: {
     title: 'Pawsed~ 🐾',
     resume: 'Keep going!! ▶️💕',
+    exitToMenu: 'Back to menu~ 🏠',
     graphics: 'Pwetty pictuwes 🎨',
     camera: 'Camewa 📷',
     audio: 'Noises~ 🔊',

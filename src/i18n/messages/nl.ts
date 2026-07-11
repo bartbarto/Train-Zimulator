@@ -60,10 +60,13 @@ export const nl: Messages = {
     boarding: 'Instappen',
     horn: 'Claxon',
     interactHint: 'LMB / A',
+    touchLook: 'Kijken',
+    touchPause: 'Pauze',
   },
   pause: {
     title: 'Gepauzeerd',
     resume: 'Hervatten',
+    exitToMenu: 'Terug naar menu',
     graphics: 'Grafisch',
     camera: 'Camera',
     audio: 'Audio',

@@ -25,6 +25,8 @@ export class CabController {
   private controls: Controls
   private readonly callbacks: CabControllerCallbacks
   private hornPulse = false
+  private touchDragHandle: CabControlHandle | null = null
+  private touchDragStartPower = 0
 
   constructor(input: InputManager, cab: Cab, controls: Controls, callbacks: CabControllerCallbacks) {
     this.input = input
@@ -39,7 +41,11 @@ export class CabController {
 
   update(snapshot: InputSnapshot, dt: number): void {
     this.updateLook(snapshot)
-    this.updateInteraction(snapshot)
+    if (this.input.touchMode) {
+      this.updateTouchCab(snapshot, dt)
+    } else {
+      this.updateInteraction(snapshot)
+    }
     this.updatePower(snapshot, dt)
     this.updateHorn(snapshot)
     this.updateEdges(snapshot)
@@ -52,6 +58,51 @@ export class CabController {
 
   private updateInteraction(s: InputSnapshot): void {
     this.cab.interaction.update(this.cab.camera.camera, s.axes.cursorX, s.axes.cursorY)
+  }
+
+  private updateTouchCab(_s: InputSnapshot, _dt: number): void {
+    const touch = this.input.touch
+    const cp = touch.cabPointer
+    const camera = this.cab.camera.camera
+
+    if (cp.active) {
+      this.cab.interaction.update(camera, cp.ndcX, cp.ndcY)
+    }
+
+    if (cp.justDown) {
+      this.touchDragHandle = this.cab.interaction.pick(camera, cp.ndcX, cp.ndcY)
+      if (this.touchDragHandle?.id === 'power') {
+        this.touchDragStartPower = this.controls.powerLever
+      }
+    }
+
+    if (cp.pointerDown && this.touchDragHandle?.id === 'power') {
+      const delta = touch.leverDeltaFromDrag(cp.dragDeltaY)
+      this.controls.setPowerLever(this.touchDragStartPower + delta)
+    }
+
+    if (cp.pointerDown && this.touchDragHandle?.id === 'horn') {
+      if (!this.controls.state.horn) {
+        this.controls.state.horn = true
+        this.callbacks.onHorn(true)
+      }
+    }
+
+    if (cp.justUp) {
+      if (this.touchDragHandle && touch.isTap(cp.totalMovement)) {
+        const id = this.touchDragHandle.id
+        if (id !== 'power' && id !== 'horn') {
+          this.applyActivation(this.touchDragHandle)
+          this.pressFeedback(this.touchDragHandle)
+        }
+      }
+      if (this.touchDragHandle?.id === 'horn') {
+        this.controls.state.horn = false
+        this.callbacks.onHorn(false)
+      }
+      this.touchDragHandle = null
+      this.cab.interaction.clearHover()
+    }
   }
 
   private updatePower(s: InputSnapshot, dt: number): void {
@@ -79,6 +130,14 @@ export class CabController {
   }
 
   private updateEdges(s: InputSnapshot): void {
+    if (this.input.touchMode) {
+      for (const action of s.pressed) {
+        if (action === 'pause' || action === 'toggleHud' || action === 'toggleDebug') {
+          this.handlePress(action)
+        }
+      }
+      return
+    }
     for (const action of s.pressed) this.handlePress(action)
   }
 

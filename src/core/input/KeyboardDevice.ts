@@ -15,12 +15,21 @@ export const DEFAULT_KEY_BINDINGS: KeyBindings = {
   Backquote: 'toggleDebug',
 }
 
+const RECENT_USE_MS = 4000
+
 export class KeyboardDevice {
   private readonly down = new Set<string>()
   private bindings: KeyBindings
+  private lastActivityAt = 0
 
   constructor(bindings: KeyBindings = DEFAULT_KEY_BINDINGS) {
     this.bindings = bindings
+  }
+
+  /** True while any bound key is held or was used within the last few seconds. */
+  get recentlyUsed(): boolean {
+    if (this.down.size > 0) return true
+    return performance.now() - this.lastActivityAt < RECENT_USE_MS
   }
 
   attach(target: Window = window): void {
@@ -51,10 +60,12 @@ export class KeyboardDevice {
   private readonly onKeyDown = (e: KeyboardEvent): void => {
     if (this.bindings[e.code]) e.preventDefault()
     this.down.add(e.code)
+    this.lastActivityAt = performance.now()
   }
 
   private readonly onKeyUp = (e: KeyboardEvent): void => {
     this.down.delete(e.code)
+    this.lastActivityAt = performance.now()
   }
 
   private readonly onBlur = (): void => {

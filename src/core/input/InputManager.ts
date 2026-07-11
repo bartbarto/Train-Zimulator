@@ -7,6 +7,7 @@ import {
 import { KeyboardDevice, type KeyBindings } from './KeyboardDevice'
 import { MouseDevice } from './MouseDevice'
 import { GamepadDevice, type GamepadConfig } from './GamepadDevice'
+import { TouchDevice } from './TouchDevice'
 
 /**
  * Aggregates all input devices into a single per-frame {@link InputSnapshot}.
@@ -17,6 +18,9 @@ export class InputManager {
   readonly keyboard = new KeyboardDevice()
   readonly mouse = new MouseDevice()
   readonly gamepad = new GamepadDevice()
+  readonly touch = new TouchDevice()
+
+  private touchModeActive = false
 
   private readonly axes: Record<AxisAction, number> = createEmptyAxes()
   private prevHeld = new Set<ButtonAction>()
@@ -31,15 +35,23 @@ export class InputManager {
     held: this.currentHeld,
   }
 
+  get touchMode(): boolean {
+    return this.touchModeActive
+  }
+
   attach(element: HTMLElement): void {
     this.keyboard.attach()
     this.gamepad.attach()
+    if (element instanceof HTMLCanvasElement) {
+      this.touch.attach(element)
+    }
     element.addEventListener('contextmenu', this.preventContext)
   }
 
   detach(element: HTMLElement): void {
     this.keyboard.detach()
     this.gamepad.detach()
+    this.touch.detach()
     element.removeEventListener('contextmenu', this.preventContext)
   }
 
@@ -67,7 +79,9 @@ export class InputManager {
     this.pressed.clear()
     this.released.clear()
 
+    this.touchModeActive = this.computeTouchMode()
     this.gamepad.poll(this.axes, this.pressed, held, dt)
+    this.touch.poll(this.axes, this.touchModeActive)
 
     // Keyboard / generic edge detection by diffing held sets.
     for (const action of held) {
@@ -84,6 +98,13 @@ export class InputManager {
     this.snapshot.held = held
 
     return this.snapshot
+  }
+
+  private computeTouchMode(): boolean {
+    if (!this.touch.isMobilePrimary) return false
+    if (this.gamepad.anyConnected()) return false
+    if (this.keyboard.recentlyUsed) return false
+    return true
   }
 
   private readonly preventContext = (e: Event): void => e.preventDefault()
