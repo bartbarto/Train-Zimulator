@@ -23,8 +23,8 @@ function apply(): void {
 
 <template>
   <div class="scrim" @click.self="emit('close')">
-    <div class="panel settings">
-      <header>
+    <div class="menu-surface settings">
+      <header class="menu-header">
         <h2>Settings</h2>
         <button @click="emit('close')">Close</button>
       </header>
@@ -75,6 +75,7 @@ function apply(): void {
   align-items: center;
   justify-content: center;
   z-index: 20;
+  backdrop-filter: blur(4px);
 }
 .settings {
   width: min(820px, 92vw);
@@ -83,59 +84,41 @@ function apply(): void {
   padding: 0;
   color: var(--text);
 }
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.4rem;
-  border-bottom: 3px solid var(--border);
-  background: var(--nmbs-blue-dark);
-  color: var(--text-light);
-}
-header button {
-  background: var(--nmbs-white);
-  color: var(--text);
-  font-size: 0.85rem;
-}
-h2 {
-  letter-spacing: 0.2rem;
-  font-size: 1.4rem;
-}
 .cols {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 0;
-  padding: 0;
+  padding: 0.25rem 0;
 }
 section {
-  padding: 1rem 1.2rem;
-  border-right: 2px solid var(--border);
-  border-bottom: 2px solid var(--border);
+  padding: 1.15rem 1.35rem;
+  border-bottom: 1px solid var(--divider);
+}
+section:last-child {
+  border-bottom: none;
 }
 section h3 {
-  color: var(--brand-blue);
-  font-size: 0.95rem;
-  letter-spacing: 0.16rem;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.3rem;
-  border-bottom: 2px solid var(--border);
+  color: var(--nmbs-blue-dark);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.85rem;
 }
 label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-family: 'Space Mono', monospace;
-  font-size: 0.75rem;
-  margin-bottom: 0.55rem;
+  gap: 0.55rem;
+  font-size: 0.875rem;
+  margin-bottom: 0.6rem;
   color: var(--text);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  font-weight: 500;
 }
 .slider { flex-wrap: wrap; }
+.slider input[type='range'] { flex: 1; min-width: 120px; }
 .hint {
-  font-family: 'Space Mono', monospace;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   line-height: 1.5;
 }
 </style>

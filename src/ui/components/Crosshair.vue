@@ -6,7 +6,7 @@ defineProps<{ label: string }>()
   <div class="crosshair">
     <div class="dot" :class="{ active: label }" />
     <transition name="fade">
-      <div v-if="label" class="tooltip panel mono">{{ label }} · LMB / A</div>
+      <div v-if="label" class="tooltip">{{ label }} · LMB / A</div>
     </transition>
   </div>
 </template>
@@ -32,13 +32,20 @@ defineProps<{ label: string }>()
 .dot.active {
   width: 14px;
   height: 14px;
-  border-color: var(--accent);
-  box-shadow: 0 0 12px var(--accent);
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 10px rgba(0, 90, 171, 0.45);
 }
 .tooltip {
-  padding: 0.3rem 0.6rem;
-  font-size: 0.8rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
   white-space: nowrap;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-card);
+  color: var(--text);
+  backdrop-filter: blur(8px);
 }
 .fade-enter-active,
 .fade-leave-active {

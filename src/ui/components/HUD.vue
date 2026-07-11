@@ -44,18 +44,18 @@ const brakeBarClass = computed(() => {
   return 'auto-brk'
 })
 const powerLabel = computed(() => {
-  if (s.value.autoBrakeActive && driverBrakePct.value < autoBrakePct.value) return `AUTO BRAKE ${autoBrakePct.value}%`
-  if (displayLever.value > POWER_DEADZONE) return `POWER ${powerPct.value}%`
-  if (displayLever.value < -POWER_DEADZONE) return `BRAKE ${-powerPct.value}%`
-  return 'IDLE'
+  if (s.value.autoBrakeActive && driverBrakePct.value < autoBrakePct.value) return `Auto brake ${autoBrakePct.value}%`
+  if (displayLever.value > POWER_DEADZONE) return `Power ${powerPct.value}%`
+  if (displayLever.value < -POWER_DEADZONE) return `Brake ${-powerPct.value}%`
+  return 'Idle'
 })
 </script>
 
 <template>
   <div class="hud">
     <div class="top">
-      <div class="objective panel">{{ s.objective }}</div>
-      <div class="signal panel" :class="s.signalAspect ?? 'clear'">
+      <div class="objective hud-card">{{ s.objective }}</div>
+      <div class="signal hud-card" :class="s.signalAspect ?? 'clear'">
         <span class="lamp" />
         <span>{{ s.signalAspect ? aspectLabel[s.signalAspect] : '—' }}</span>
       </div>
@@ -63,19 +63,19 @@ const powerLabel = computed(() => {
 
     <div class="warnings">
       <div v-if="speedZoneWarning" class="warn speed-zone">{{ speedZoneWarning }}</div>
-      <div v-if="s.autoBrakeActive" class="warn auto-brake">AUTO BRAKE — {{ s.autoBrakeLabel }}</div>
-      <div v-if="!s.departureAllowed" class="warn warn-y">DEPARTURE INTERLOCK</div>
-      <div v-if="s.wheelSlip" class="warn warn-y">WHEEL SLIP</div>
-      <div v-if="overspeed" class="warn warn-y">OVERSPEED</div>
+      <div v-if="s.autoBrakeActive" class="warn auto-brake">Auto brake — {{ s.autoBrakeLabel }}</div>
+      <div v-if="!s.departureAllowed" class="warn warn-y">Departure interlock</div>
+      <div v-if="s.wheelSlip" class="warn warn-y">Wheel slip</div>
+      <div v-if="overspeed" class="warn warn-y">Overspeed</div>
     </div>
 
     <div class="bottom">
-      <div class="power panel">
-        <label>POWER / BRAKE</label>
+      <div class="power hud-card">
+        <label>Power / brake</label>
         <div class="bar">
-          <span class="tick top mono">100</span>
+          <!-- <span class="tick top mono">100</span> -->
           <div class="center" />
-          <span class="tick bottom mono">−100</span>
+          <!-- <span class="tick bottom mono">−100</span> -->
           <div
             v-if="displayLever > POWER_DEADZONE"
             class="fill thr"
@@ -91,26 +91,26 @@ const powerLabel = computed(() => {
         <span class="mono label">{{ powerLabel }}</span>
       </div>
 
-      <div class="speedo panel">
+      <div class="speedo hud-card">
         <div class="speed mono" :class="{ over: overspeed }">{{ Math.round(Math.abs(s.speedKmh)) }}</div>
         <div class="unit">km/h</div>
-        <div class="limit mono">limit {{ Math.round(s.speedLimitKmh) }}</div>
+        <div class="limit">Limit {{ Math.round(s.speedLimitKmh) }}</div>
       </div>
 
-      <div class="status panel mono">
+      <div class="status hud-card">
         <div class="row">
-          <span>DOORS</span>
-          <b :class="s.doorsOpen ? 'open' : 'closed'">{{ s.doorsOpen ? 'OPEN' : 'CLOSED' }}</b>
+          <span>Doors</span>
+          <b :class="s.doorsOpen ? 'open' : 'closed'">{{ s.doorsOpen ? 'Open' : 'Closed' }}</b>
         </div>
         <div v-if="s.doorsOpen && !s.departureAllowed" class="row boarding">
-          <span>PEOPLE ON PLATFORM</span>
+          <span>On platform</span>
           <b>{{ s.platformWaiting }}</b>
         </div>
         <div v-if="s.doorsOpen && s.boardingRemaining > 0" class="row boarding">
-          <span>BOARDING</span>
+          <span>Boarding</span>
           <b>{{ Math.ceil(s.boardingRemaining) }}s</b>
         </div>
-        <div v-if="s.horn" class="row horn">HORN</div>
+        <div v-if="s.horn" class="row horn">Horn</div>
       </div>
     </div>
   </div>
@@ -121,126 +121,164 @@ const powerLabel = computed(() => {
   position: absolute;
   inset: 0;
   font-size: 0.9rem;
+  font-family: inherit;
+  pointer-events: none;
 }
+
+.hud-card {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(8px);
+}
+
 .top {
   position: absolute;
   top: 1rem;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 0.6rem;
+  gap: 0.5rem;
   align-items: center;
 }
+
 .objective {
-  padding: 0.5rem 1rem;
-  background: var(--instrument-bg);
-  color: var(--text-dark);
-  font-family: 'Space Mono', monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  padding: 0.5rem 0.95rem;
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 500;
+  max-width: min(420px, 80vw);
+  text-align: center;
+  line-height: 1.35;
 }
+
 .signal {
   padding: 0.45rem 0.85rem;
   display: flex;
   gap: 0.5rem;
   align-items: center;
-  font-weight: 400;
-  font-size: 1rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  background: var(--instrument-bg);
-  color: var(--text-dark);
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--text);
+  white-space: nowrap;
 }
+
 .lamp {
-  width: 12px;
-  height: 12px;
-  border-radius: 0;
-  border: 2px solid var(--border);
-  background: var(--muted-light);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 56, 117, 0.15);
+  background: var(--divider);
+  flex-shrink: 0;
 }
-.signal.clear .lamp { background: var(--signal-clear); }
+
+.signal.clear .lamp { background: var(--signal-clear); border-color: var(--signal-clear); }
 .signal.caution .lamp,
-.signal.preliminaryCaution .lamp { background: var(--warn); }
-.signal.danger .lamp { background: var(--danger); }
+.signal.preliminaryCaution .lamp { background: var(--warn); border-color: var(--warn); }
+.signal.danger .lamp { background: var(--danger); border-color: var(--danger); }
 
 .warnings {
   position: absolute;
-  top: 4.5rem;
+  top: 4.25rem;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.35rem;
   align-items: center;
 }
+
 .warn {
-  padding: 0.35rem 0.85rem;
-  border-radius: 0;
-  border: 2px solid var(--border);
-  /* box-shadow: var(--shadow-sm); */
-  font-family: 'Bebas Neue', sans-serif;
-  font-weight: 400;
-  font-size: 0.95rem;
-  letter-spacing: 0.12em;
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  font-size: 0.78rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-card);
 }
-.warn.warn-y { background: var(--warn); color: var(--text); }
-.warn.speed-zone { background: var(--highlight); color: var(--text); }
-.warn.auto-brake { background: var(--nmbs-red); color: var(--text-light); }
+
+.warn.warn-y {
+  background: #fff4e0;
+  color: #7a5200;
+  border-color: #f0d090;
+}
+
+.warn.speed-zone {
+  background: var(--nmbs-blue-tint);
+  color: var(--nmbs-blue-dark);
+  border-color: #c5dff0;
+}
+
+.warn.auto-brake {
+  background: #fdeaea;
+  color: var(--nmbs-red-dark);
+  border-color: #f0c0c0;
+}
 
 .bottom {
   position: absolute;
-  bottom: 1.4rem;
+  bottom: 1.25rem;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 0.75rem;
+  gap: 0.55rem;
   align-items: flex-end;
 }
+
 .power {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.75rem 0.9rem;
-  background: var(--instrument-bg);
-  color: var(--instrument-text);
+  gap: 0.45rem;
+  padding: 0.75rem 0.85rem;
+  color: var(--text);
 }
+
 .power > label {
   font-size: 0.65rem;
-  color: var(--instrument-muted);
-  letter-spacing: 0.14em;
-  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
+
 .bar {
-  width: 24px;
-  height: 100px;
-  border-radius: 0;
-  background: var(--instrument-bg-dark);
-  border: 2px solid var(--border);
+  width: 22px;
+  height: 96px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-muted);
+  border: 1px solid var(--divider);
   position: relative;
   overflow: hidden;
 }
+
 .tick {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.5rem;
-  color: var(--instrument-text);
+  font-size: 0.48rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-shadow: 1px 1px 0 1px var(--surface);
   z-index: 1;
   pointer-events: none;
 }
-.tick.top { top: 2px; }
-.tick.bottom { bottom: 2px; }
+
+.tick.top { top: 4px; }
+.tick.bottom { bottom: 4px; }
+
 .center {
   position: absolute;
   top: 50%;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--border);
+  left: 4px;
+  right: 4px;
+  height: 2px;
+  background: var(--divider);
+  border-radius: var(--radius-pill);
   transform: translateY(-50%);
 }
+
 .fill {
   position: absolute;
   left: 0;
@@ -248,100 +286,103 @@ const powerLabel = computed(() => {
   width: 100%;
   transition: height 0.12s linear;
 }
+
 .fill.thr {
   bottom: 50%;
   background: var(--throttle-up);
+  border-radius: 0 0 var(--radius-pill) var(--radius-pill);
 }
+
 .fill.brk {
   top: 50%;
   background: var(--nmbs-red);
+  border-radius: var(--radius-pill) var(--radius-pill) 0 0;
 }
+
 .fill.auto-brk {
   top: 50%;
   background: var(--nmbs-red-dark);
+  border-radius: var(--radius-pill) var(--radius-pill) 0 0;
 }
+
 .label {
   font-size: 0.62rem;
-  color: var(--instrument-muted);
-  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: center;
+  max-width: 72px;
+  line-height: 1.25;
 }
 
 .speedo {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.75rem 1.4rem 0.65rem;
-  background: var(--instrument-bg);
-  color: var(--instrument-text);
-  min-width: 130px;
-  position: relative;
+  padding: 0.7rem 1.25rem 0.6rem;
+  color: var(--text);
+  min-width: 118px;
 }
-.speedo::before {
-  content: '';
-  position: absolute;
-  inset: 8px;
-  border: 2px solid var(--border-light);
-  pointer-events: none;
-}
-.speedo::after {
-  content: '';
-  position: absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 3px;
-  height: 10px;
-  background: var(--border);
-}
+
 .speed {
-  font-size: 3.6rem;
+  font-size: 3rem;
   line-height: 1;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  position: relative;
-  z-index: 1;
+  letter-spacing: -0.03em;
+  color: var(--nmbs-blue-dark);
 }
+
 .speed.over { color: var(--danger); }
+
 .unit {
-  color: var(--instrument-muted);
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 0.85rem;
-  letter-spacing: 0.2em;
-  position: relative;
-  z-index: 1;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.1rem;
 }
+
 .limit {
   color: var(--brand-blue);
   margin-top: 0.35rem;
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  position: relative;
-  z-index: 1;
+  font-size: 0.72rem;
+  font-weight: 600;
 }
 
 .status {
-  padding: 0.65rem 0.9rem;
-  min-width: 130px;
-  background: var(--instrument-bg);
-  color: var(--instrument-text);
-  font-size: 0.72rem;
+  padding: 0.6rem 0.85rem;
+  min-width: 128px;
+  color: var(--text);
+  font-size: 0.8rem;
 }
+
 .row {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.15rem 0;
-  border-bottom: 1px solid var(--instrument-bg-dark);
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--divider);
 }
+
 .row:last-child { border-bottom: none; }
+
 .row span {
-  color: var(--instrument-muted);
-  font-family: 'Bebas Neue', sans-serif;
-  letter-spacing: 0.1em;
+  color: var(--muted);
   font-size: 0.75rem;
+  font-weight: 500;
 }
-.open { color: var(--warn); }
-.closed { color: var(--highlight); }
-.boarding { color: var(--highlight); }
-.horn { color: var(--highlight); justify-content: center; font-weight: 700; }
+
+.row b {
+  font-weight: 600;
+  color: var(--nmbs-blue-dark);
+}
+
+.open { color: var(--warn) !important; }
+.closed { color: var(--brand-blue) !important; }
+.boarding b { color: var(--brand-blue); }
+.horn {
+  color: var(--brand-blue);
+  justify-content: center;
+  font-weight: 600;
+  border-bottom: none;
+}
 </style>

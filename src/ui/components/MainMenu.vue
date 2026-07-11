@@ -37,12 +37,14 @@ function start(): void {
 <template>
   <div class="menu">
     <div class="brand">
-      <div class="logo"><span /><span /><span /></div>
-      <h1>TRAIN ZIMULATOR</h1>
-      <p class="tagline mono">Select your train and route</p>
+      <div class="logo" aria-hidden="true">
+        <img src="/logo_clean.svg" alt="Train Zimulator" />
+      </div>
+      <h1>Train Zimulator</h1>
+      <p class="tagline">Select your train and route</p>
     </div>
 
-    <div class="layout">
+    <div class="layout menu-surface">
       <section class="picker">
         <h2>Locomotive</h2>
         <div class="cards">
@@ -117,133 +119,112 @@ function start(): void {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.4rem;
+  gap: 1.75rem;
   padding: 1.5rem;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      transparent,
-      transparent 39px,
-      rgba(0, 56, 117, 0.07) 39px,
-      rgba(0, 56, 117, 0.07) 40px
-    ),
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 39px,
-      rgba(0, 56, 117, 0.07) 39px,
-      rgba(0, 56, 117, 0.07) 40px
-    ),
-    var(--bg-warm);
+  background: linear-gradient(160deg, var(--nmbs-blue-tint) 0%, var(--surface-muted) 45%, var(--surface) 100%);
   color: var(--text);
 }
 .brand {
   text-align: center;
 }
 .logo {
-  display: flex;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  align-items: flex-end;
-  gap: 0.35rem;
+  width: 3.4rem;
+  height: auto;
 }
-.logo span {
-  display: block;
-  width: 1.1rem;
-  border: 3px solid var(--border);
-  box-shadow: var(--shadow-sm);
-}
-.logo span:nth-child(1) { height: 2.4rem; background: var(--nmbs-red); }
-.logo span:nth-child(2) { height: 1.8rem; background: var(--nmbs-blue-dark); }
-.logo span:nth-child(3) { height: 2.2rem; background: var(--nmbs-blue-light); }
 h1 {
-  font-size: 3.2rem;
-  letter-spacing: 0.35rem;
-  margin-top: 0.5rem;
-  line-height: 1;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 0.85rem;
+  line-height: 1.2;
+  color: var(--nmbs-blue-dark);
 }
 .tagline {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.72rem;
+  font-size: 0.9rem;
   color: var(--muted);
-  margin-top: 0.5rem;
-  letter-spacing: 0.08rem;
-  text-transform: uppercase;
+  margin-top: 0.35rem;
+  font-weight: 500;
 }
 .layout {
-  width: min(960px, 96vw);
+  width: min(920px, 96vw);
   display: grid;
-  grid-template-columns: 1fr 1fr minmax(200px, 240px);
+  grid-template-columns: 1fr 1fr minmax(210px, 250px);
   gap: 0;
   padding: 0;
-  border: 3px solid var(--border);
-  box-shadow: var(--shadow);
-  background: var(--panel);
+  overflow: hidden;
 }
 .picker,
 .stats {
-  padding: 1rem 1.1rem;
-  border-right: 3px solid var(--border);
+  padding: 1.25rem 1.35rem;
+  border-right: 1px solid var(--divider);
 }
 .stats {
   border-right: none;
-  background: color-mix(in srgb, var(--highlight) 35%, var(--nmbs-white));
+  background: var(--surface-muted);
 }
 .picker h2,
 .stats h2 {
-  font-size: 0.95rem;
-  letter-spacing: 0.18rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--brand-blue);
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.35rem;
-  border-bottom: 3px solid var(--border);
+  color: var(--muted);
+  margin-bottom: 0.85rem;
 }
 .cards {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.45rem;
 }
 .card {
   display: flex;
   justify-content: space-between;
   align-items: center;
   text-align: left;
-  padding: 0.6rem 0.75rem;
-  background: var(--bg-warm);
-  border: 2px solid var(--border);
-  border-radius: 0;
+  padding: 0.7rem 0.9rem;
+  background: var(--surface);
+  border: 1.5px solid var(--divider);
+  border-radius: var(--radius-md);
   box-shadow: none;
-  font-family: 'Space Mono', monospace;
-  font-size: 0.78rem;
-  letter-spacing: 0.02em;
+  font-size: 0.875rem;
+  letter-spacing: 0;
   text-transform: none;
+  font-weight: 500;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 .card:hover {
+  border-color: var(--brand-blue);
+  background: var(--nmbs-blue-tint);
   transform: none;
-  box-shadow: inset 0 0 0 2px var(--brand-blue);
+  box-shadow: none;
 }
 .card.active {
-  background: var(--nmbs-red);
+  background: var(--brand-blue);
   color: var(--text-light);
-  border-color: var(--border);
-  box-shadow: var(--shadow-sm);
+  border-color: var(--brand-blue);
+  box-shadow: var(--shadow-card);
 }
 .card.active .type {
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.8);
 }
 .name {
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 .type {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   color: var(--muted);
-  text-transform: uppercase;
+  font-weight: 500;
 }
 .stats h3 {
-  font-size: 1rem;
-  letter-spacing: 0.1rem;
-  margin: 0.75rem 0 0.4rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--nmbs-blue-dark);
+  margin: 0.85rem 0 0.5rem;
 }
 .stats h3:first-of-type {
   margin-top: 0;
@@ -251,38 +232,43 @@ h1 {
 dl {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  font-size: 0.72rem;
+  gap: 0.4rem;
+  font-size: 0.8rem;
 }
 dl div {
   display: flex;
   justify-content: space-between;
   gap: 0.8rem;
-  padding: 0.2rem 0;
-  border-bottom: 1px solid var(--border-light);
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--divider);
 }
-dt { color: var(--muted); text-transform: uppercase; font-size: 0.65rem; }
-dd { font-weight: 700; }
+dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+dd {
+  font-weight: 600;
+  color: var(--nmbs-blue-dark);
+}
 .actions {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+  align-items: center;
 }
 .start {
-  min-width: 160px;
-  padding: 0.7rem 1.6rem;
-  font-size: 1.15rem;
+  min-width: 140px;
+  padding: 0.65rem 1.5rem;
 }
 footer {
-  font-family: 'Space Mono', monospace;
   color: var(--muted);
-  font-size: 0.68rem;
-  letter-spacing: 0.02em;
-  text-transform: none;
+  font-size: 0.75rem;
 }
 code {
   color: var(--brand-blue);
-  font-weight: 700;
+  font-weight: 600;
+  font-size: 0.85em;
 }
 @media (max-width: 820px) {
   .layout {
@@ -291,10 +277,18 @@ code {
   .picker,
   .stats {
     border-right: none;
-    border-bottom: 3px solid var(--border);
+    border-bottom: 1px solid var(--divider);
   }
   .stats {
     border-bottom: none;
+  }
+  .actions {
+    flex-direction: column;
+    width: 100%;
+    max-width: 280px;
+  }
+  .actions button {
+    width: 100%;
   }
 }
 </style>

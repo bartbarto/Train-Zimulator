@@ -53,8 +53,8 @@ async function switchLoco(id: string) {
 
 <template>
   <div class="scrim">
-    <div class="menu panel">
-      <header>
+    <div class="menu menu-surface">
+      <header class="menu-header">
         <h2>Paused</h2>
         <button class="primary" @click="emit('resume')">Resume</button>
       </header>
@@ -134,6 +134,7 @@ async function switchLoco(id: string) {
   display: flex;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(4px);
 }
 .menu {
   width: min(820px, 92vw);
@@ -142,83 +143,59 @@ async function switchLoco(id: string) {
   padding: 0;
   color: var(--text);
 }
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.4rem;
-  border-bottom: 3px solid var(--border);
-  background: var(--nmbs-blue-dark);
-  color: var(--text-light);
-}
-header button.primary {
-  background: var(--nmbs-red);
-  color: var(--text-light);
-}
-header button.primary:hover {
-  background: var(--nmbs-red-dark);
-}
-h2 {
-  letter-spacing: 0.2rem;
-  font-size: 1.4rem;
-}
 .cols {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 0;
+  padding: 0.25rem 0;
 }
 section {
-  padding: 1rem 1.2rem;
-  border-right: 2px solid var(--border);
-  border-bottom: 2px solid var(--border);
+  padding: 1.15rem 1.35rem;
+  border-bottom: 1px solid var(--divider);
 }
 section h3 {
-  color: var(--brand-blue);
-  font-size: 0.95rem;
-  letter-spacing: 0.16rem;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.3rem;
-  border-bottom: 2px solid var(--border);
+  color: var(--nmbs-blue-dark);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.85rem;
 }
 label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-family: 'Space Mono', monospace;
-  font-size: 0.75rem;
-  margin-bottom: 0.55rem;
+  gap: 0.55rem;
+  font-size: 0.875rem;
+  margin-bottom: 0.6rem;
   color: var(--text);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  font-weight: 500;
 }
 .slider { flex-wrap: wrap; }
+.slider input[type='range'] { flex: 1; min-width: 120px; }
 .weather { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
-.weather button { text-transform: capitalize; padding: 0.35rem 0.65rem; font-size: 0.85rem; }
+.weather button { text-transform: capitalize; padding: 0.35rem 0.75rem; font-size: 0.82rem; }
 .loco-list { display: flex; flex-direction: column; gap: 0.4rem; }
 .loco-list button {
   text-align: left;
-  font-family: 'Space Mono', monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.02em;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0;
   text-transform: none;
+  border-radius: var(--radius-md);
 }
 .hint {
-  font-family: 'Space Mono', monospace;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   margin-bottom: 0.5rem;
 }
-.row { display: flex; gap: 0.5rem; }
-.flash { color: var(--ok); font-family: 'Space Mono', monospace; font-size: 0.75rem; font-weight: 700; }
+.row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.flash { color: var(--brand-blue); font-size: 0.8rem; font-weight: 600; }
 footer {
   margin: 0;
-  padding: 0.85rem 1.2rem;
-  border-top: 3px solid var(--border);
-  background: color-mix(in srgb, var(--highlight) 25%, var(--nmbs-white));
-  font-family: 'Space Mono', monospace;
+  padding: 0.9rem 1.35rem;
+  border-top: 1px solid var(--divider);
+  background: var(--surface-muted);
   color: var(--muted);
-  font-size: 0.68rem;
-  letter-spacing: 0.02em;
-  text-transform: none;
+  font-size: 0.75rem;
 }
 </style>

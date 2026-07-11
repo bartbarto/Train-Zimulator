@@ -2,10 +2,11 @@
   /* NMBS / SNCB palette */
   --nmbs-white: #ffffff;
   --nmbs-red: #a21212;
-  --nmbs-red-dark: #651428;
+  --nmbs-red-dark: #7a0e0e;
   --nmbs-blue-dark: #003875;
   --nmbs-blue: #005aab;
   --nmbs-blue-light: #8ecae8;
+  --nmbs-blue-tint: #e8f2fa;
   --throttle-up: #00652a;
 
   --bg: var(--nmbs-blue-dark);
@@ -17,10 +18,10 @@
   --border-light: var(--nmbs-blue);
   --text: var(--nmbs-blue-dark);
   --text-light: var(--nmbs-white);
-  --muted: #4a6678;
+  --muted: #5a6b7a;
   --muted-light: var(--nmbs-blue-light);
   --accent: var(--nmbs-red);
-  --accent-dark: var(--nmbs-red);
+  --accent-dark: var(--nmbs-red-dark);
   --brand-blue: var(--nmbs-blue);
   --highlight: var(--nmbs-blue);
   --instrument-bg: #d8d8d8;
@@ -31,12 +32,24 @@
   --warn: #c4920a;
   --ok: var(--nmbs-blue);
   --signal-clear: #2a8f5c;
-  --scrim: rgba(0, 56, 117, 0.72);
-  --grid-line: rgba(0, 56, 117, 0.07);
-  --shadow: 4px 4px 0 var(--nmbs-blue-dark);
-  --shadow-sm: 2px 2px 0 var(--nmbs-blue-dark);
-  font-family: 'Bebas Neue', 'Arial Narrow', sans-serif;
-  letter-spacing: 0.06em;
+
+  /* Menu / modern SNCB surfaces */
+  --surface: var(--nmbs-white);
+  --surface-muted: #f4f7fa;
+  --divider: #d8e2ec;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  --shadow-soft: 0 8px 32px rgba(0, 56, 117, 0.14);
+  --shadow-card: 0 2px 10px rgba(0, 56, 117, 0.08);
+  --scrim: rgba(0, 43, 82, 0.45);
+  --grid-line: rgba(0, 90, 171, 0.06);
+  --shadow: var(--shadow-soft);
+  --shadow-sm: var(--shadow-card);
+
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  letter-spacing: 0;
   color-scheme: light;
 }
 
@@ -78,103 +91,141 @@ canvas {
 
 button {
   font: inherit;
-  font-family: 'Bebas Neue', 'Arial Narrow', sans-serif;
-  font-size: 1rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text);
-  background: var(--panel);
-  border: 3px solid var(--border);
-  border-radius: 0;
-  padding: 0.55rem 1rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--brand-blue);
+  background: var(--surface);
+  border: 1.5px solid var(--divider);
+  border-radius: var(--radius-pill);
+  padding: 0.55rem 1.15rem;
   cursor: pointer;
-  /* box-shadow: var(--shadow-sm); */
-  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
 }
 
 button:hover {
-  transform: translate(-1px, -1px) scale(1.005);
-  /* box-shadow: 3px 3px 0 var(--border); */
+  background: var(--nmbs-blue-tint);
+  border-color: var(--brand-blue);
+  transform: none;
 }
 
 button:active {
-  transform: translate(2px, 2px);
-  box-shadow: none;
+  transform: scale(0.98);
 }
 
 button.primary {
-  background: var(--accent);
+  background: var(--brand-blue);
   color: var(--text-light);
-  border-color: var(--border);
-  font-weight: 400;
+  border-color: var(--brand-blue);
 }
 
 button.primary:hover {
-  background: var(--accent-dark);
+  background: var(--nmbs-blue-dark);
+  border-color: var(--nmbs-blue-dark);
 }
 
 .panel {
   background: var(--panel);
   border: 3px solid var(--border);
   border-radius: 0;
-  /* box-shadow: var(--shadow); */
 }
 
 .panel-dark {
   background: var(--panel-dark);
   border: 3px solid var(--border);
   border-radius: 0;
-  box-shadow: var(--shadow);
   color: var(--text-light);
 }
 
+.menu-surface {
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-lg);
+}
+
+.menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.1rem 1.5rem;
+  background: var(--brand-blue);
+  color: var(--text-light);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.menu-header h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.menu-header button {
+  background: var(--surface);
+  color: var(--brand-blue);
+  border-color: transparent;
+  font-size: 0.85rem;
+  padding: 0.45rem 1rem;
+}
+
+.menu-header button.primary {
+  background: var(--surface);
+  color: var(--brand-blue);
+}
+
+.menu-header button:hover {
+  background: var(--nmbs-blue-tint);
+}
+
 .mono {
-  font-family: 'Space Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
+  font-feature-settings: 'tnum';
 }
 
 input[type='checkbox'] {
   appearance: none;
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid var(--border);
-  border-radius: 0;
-  background: var(--bg-warm);
+  width: 1.05rem;
+  height: 1.05rem;
+  border: 1.5px solid var(--divider);
+  border-radius: 4px;
+  background: var(--surface);
   cursor: pointer;
   flex-shrink: 0;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 input[type='checkbox']:checked {
-  background: var(--accent);
-  box-shadow: inset 0 0 0 2px var(--bg-warm);
+  background: var(--brand-blue);
+  border-color: var(--brand-blue);
+  box-shadow: inset 0 0 0 2px var(--surface);
 }
 
 input[type='range'] {
   appearance: none;
-  height: 6px;
-  background: var(--border-light);
-  border: 2px solid var(--border);
-  border-radius: 0;
+  height: 4px;
+  background: var(--divider);
+  border: none;
+  border-radius: var(--radius-pill);
 }
 
 input[type='range']::-webkit-slider-thumb {
   appearance: none;
-  width: 14px;
-  height: 18px;
-  background: var(--accent);
-  border: 2px solid var(--border);
-  border-radius: 0;
+  width: 16px;
+  height: 16px;
+  background: var(--brand-blue);
+  border: 2px solid var(--surface);
+  border-radius: 50%;
   cursor: pointer;
-  box-shadow: 2px 2px 0 var(--border);
+  box-shadow: 0 1px 4px rgba(0, 56, 117, 0.25);
 }
 
 input[type='range']::-moz-range-thumb {
-  width: 14px;
-  height: 18px;
-  background: var(--accent);
-  border: 2px solid var(--border);
-  border-radius: 0;
+  width: 16px;
+  height: 16px;
+  background: var(--brand-blue);
+  border: 2px solid var(--surface);
+  border-radius: 50%;
   cursor: pointer;
-  box-shadow: 2px 2px 0 var(--border);
+  box-shadow: 0 1px 4px rgba(0, 56, 117, 0.25);
 }

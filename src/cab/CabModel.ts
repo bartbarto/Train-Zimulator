@@ -240,7 +240,7 @@ export class CabModel {
 
   /** One lever: forward = power, backward = brake. */
   private buildPowerLever(): void {
-    const leverX = 0.15
+    const leverX = 0.05
     const leverY = 1.278
     const leverZ = -0.52
     const slotMat = new MeshStandardMaterial({ color: 0x080808, metalness: 0.05, roughness: 0.98 })
@@ -276,8 +276,8 @@ export class CabModel {
   }
 
   private buildButtons(): void {
-    this.addButton('horn', 'Horn', 0.45, 1.26, -0.6, 0x2255cc, 'button')
-    this.addButton('doors', 'Doors', -0.45, 1.26, -0.6, 0x99bb55, 'toggle')
+    this.addButton('horn', 'Horn', -0.45, 1.26, -0.6, 0x2255cc, 'button')
+    this.addButton('doors', 'Doors', 0.45, 1.26, -0.6, 0x99bb55, 'toggle')
   }
 
   private addButton(
