@@ -326,9 +326,8 @@ export class Game {
       this.sound.update(frameDt, tel, train.controls.state, train.brakeEffort, this.sim.environment.preset.rain)
     }
 
-    this.cab.updatePlatformMonitor(this.scene.scene)
-
     this.renderer.render(this.scene.scene, this.cab.camera.camera)
+    this.cab.updatePlatformMonitor(this.scene.scene)
     this.pushSnapshot(frameDt, tel)
   }
 
@@ -401,6 +400,7 @@ export class Game {
     const s = this.settings.settings
     this.renderer.setBloom(s.graphics.bloom)
     this.renderer.setShadows(s.graphics.shadows)
+    this.cab?.setShadows(s.graphics.shadows)
     this.renderer.setExposure(s.graphics.exposure)
     this.cab?.camera.setConfig(s.camera)
     this.input.setGamepadConfig(s.gamepad)

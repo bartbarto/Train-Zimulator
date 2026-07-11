@@ -9,6 +9,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   Object3D,
+  PCFShadowMap,
   PerspectiveCamera,
   PlaneGeometry,
   Scene,
@@ -20,6 +21,8 @@ import { CONSIST_RENDER_LAYER } from './TrainConsist'
 
 const TEXTURE_W = 640
 const TEXTURE_H = 480
+/** Full-scene offscreen pass interval; the small screen hides the lower refresh. */
+const MONITOR_UPDATE_INTERVAL = 3
 
 /**
  * Cab-mounted rear-view monitor on the right interior wall.
@@ -37,6 +40,7 @@ export class PlatformMonitor {
   private readonly camLocalLook = new Vector3()
   private readonly worldLook = new Vector3()
   private readonly monitorFill = new HemisphereLight(0xffffff, 0x666666, 1)
+  private frameCount = 0
 
   constructor() {
     this.canvas = document.createElement('canvas')
@@ -49,6 +53,10 @@ export class PlatformMonitor {
     this.monitorGl.outputColorSpace = SRGBColorSpace
     this.monitorGl.toneMapping = ACESFilmicToneMapping
     this.monitorGl.toneMappingExposure = 1.1
+    this.monitorGl.shadowMap.enabled = true
+    this.monitorGl.shadowMap.type = PCFShadowMap
+    // Reuse shadow maps already baked by the main renderer this frame.
+    this.monitorGl.shadowMap.autoUpdate = false
 
     this.texture = new CanvasTexture(this.canvas)
     this.texture.colorSpace = SRGBColorSpace
@@ -104,6 +112,9 @@ export class PlatformMonitor {
   }
 
   render(scene: Scene, cabRoot: Object3D, interior: Object3D, trainRearOffsetZ: number): void {
+    this.frameCount++
+    if (this.frameCount % MONITOR_UPDATE_INTERVAL !== 0) return
+
     this.updateCamera(cabRoot, trainRearOffsetZ)
 
     const interiorVisible = interior.visible
@@ -118,6 +129,7 @@ export class PlatformMonitor {
     scene.add(this.monitorFill)
     this.monitorGl.render(scene, this.camera)
     scene.remove(this.monitorFill)
+
     interior.visible = interiorVisible
     this.texture.needsUpdate = true
   }
@@ -126,5 +138,9 @@ export class PlatformMonitor {
     this.monitorGl.dispose()
     this.texture.dispose()
     this.screenMat.dispose()
+  }
+
+  setShadows(enabled: boolean): void {
+    this.monitorGl.shadowMap.enabled = enabled
   }
 }

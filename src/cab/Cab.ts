@@ -127,6 +127,10 @@ export class Cab {
     this.platformMonitor.render(scene, this.root, this.interior, this.consist.rearOffsetZ)
   }
 
+  setShadows(enabled: boolean): void {
+    this.platformMonitor.setShadows(enabled)
+  }
+
   update(dt: number): void {
     this.camera.update(dt)
   }
