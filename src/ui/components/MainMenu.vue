@@ -252,9 +252,9 @@ h1 {
   margin-top: 0;
 }
 .personal-best-heading {
-  margin-top: 1.1rem !important;
-  padding-top: 0.85rem;
-  border-top: 1px solid var(--divider);
+  /* margin-top: 1.1rem !important; */
+  /* padding-top: 0.85rem; */
+  /* border-top: 1px solid var(--divider); */
 }
 .personal-best dd {
   color: var(--brand-blue);

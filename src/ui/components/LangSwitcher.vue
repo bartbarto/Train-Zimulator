@@ -7,7 +7,7 @@ const { locale, setLocale, t } = useI18n()
 
 <template>
   <div class="lang-switcher">
-    <span class="label">{{ t('menu.language') }}</span>
+    <!-- <span class="label">{{ t('menu.language') }}</span> -->
     <div class="options" role="group" :aria-label="t('menu.language')">
       <button
         v-for="opt in LOCALES"
@@ -28,6 +28,9 @@ const { locale, setLocale, t } = useI18n()
   flex-direction: column;
   align-items: center;
   gap: 0.45rem;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
 }
 .label {
   font-size: 0.72rem;
