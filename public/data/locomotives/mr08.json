@@ -5,6 +5,8 @@
   "cabColorAccent": "0xf5d803",
   "carriageColor": "0x7e7e7e",
   "carriageAccentColor": "0xf5d803",
+  "carriageDoorColor": "0x840505",
+  "roofColor": "0x555555",
   "type": "electric",
   "massTonnes": 147,
   "lengthMetres": 79.9,

@@ -35,7 +35,7 @@ export interface Settings {
 export function createDefaultSettings(): Settings {
   return {
     graphics: { bloom: true, shadows: true, exposure: 1.0, pixelRatioCap: 2 },
-    camera: { fov: 50, lookSensitivity: 1, invertY: false, smoothing: 12 },
+    camera: { fov: 62, lookSensitivity: 2, invertY: false, smoothing: 12 },
     audio: { master: 0.8, engine: 0.9, ambient: 0.7 },
     keyBindings: { ...DEFAULT_KEY_BINDINGS },
     gamepad: { ...DEFAULT_GAMEPAD_CONFIG },

@@ -29,6 +29,10 @@ const STRIDE_HEIGHT = 0.045
 const MIN_WALK_SPEED_MS = 3
 const MAX_WALK_SPEED_MS = 6
 const SIGN_CLEARANCE_M = 2.8
+/** Platform +X faces the track; passengers queue on −X and walk to this edge. */
+const DOOR_APPROACH_X = 1.05
+const PLATFORM_WAIT_X_MIN = -0.95
+const PLATFORM_WAIT_X_MAX = -0.45
 
 const SKIN_TONES = [0xffdbac, 0xf1c27d, 0xe0ac69, 0xc68642, 0x8d5524, 0x5c3d2e, 0x3b2219]
 
@@ -105,11 +109,6 @@ export class Stations {
 
   update(dt: number, state: StationBoardingState): void {
     const stopped = Math.abs(state.trainSpeedMs) <= STOPPED_SPEED_MS
-    const inStopZone =
-      !!state.stationId &&
-      state.trainDistance >= state.stopZoneStart &&
-      state.trainDistance <= state.stopZoneEnd
-    const boarding = state.doorsOpen && stopped && inStopZone
 
     for (const platform of this.platforms) {
       const atThisStation = state.stationId === platform.id
@@ -124,10 +123,10 @@ export class Stations {
         platform.visitActive = false
       }
 
-      const activeStation = boarding && atThisStation
+      const walkToDoors = state.doorsOpen && stopped && inThisStopZone
       const trainLocalZ = state.trainDistance - platform.distance
       for (const passenger of platform.passengers) {
-        this.updatePassenger(passenger, dt, activeStation, trainLocalZ, state.carriageDoorOffsetsZ)
+        this.updatePassenger(passenger, dt, walkToDoors, trainLocalZ, state.carriageDoorOffsetsZ)
       }
     }
   }
@@ -184,29 +183,20 @@ export class Stations {
   private updatePassenger(
     passenger: PassengerAgent,
     dt: number,
-    walking: boolean,
+    walkToDoors: boolean,
     trainLocalZ: number,
     carriageDoorOffsetsZ: readonly number[],
   ): void {
     const person = passenger.group
     const target = boardingTarget(passenger, trainLocalZ, carriageDoorOffsetsZ)
 
-    if (walking) {
+    if (walkToDoors) {
       if (passenger.boarded) {
         person.visible = false
         return
       }
 
-      if (passenger.walkedMetres <= 0) {
-        passenger.waitTimer += dt
-        if (passenger.waitTimer < passenger.boardingDelay) {
-          person.visible = true
-          person.position.set(passenger.homeX, PLATFORM_TOP_Y, passenger.homeZ)
-          person.rotation.y = passenger.homeYaw
-          return
-        }
-        passenger.pathLength = walkPathLength(passenger, target)
-      }
+      passenger.pathLength = walkPathLength(passenger, target)
 
       passenger.stridePhase += dt * passenger.walkRate
       passenger.walkedMetres = Math.min(
@@ -216,11 +206,11 @@ export class Stations {
 
       const { x, z, t } = positionAlongPath(passenger, target, passenger.walkedMetres, passenger.pathLength)
       const stride = Math.abs(Math.sin(passenger.stridePhase * Math.PI * 2)) * STRIDE_HEIGHT
-      const walkYaw = target.z < passenger.homeZ ? Math.PI - 0.12 : 0.12
+      const walkYaw = yawToward(passenger.homeX, passenger.homeZ, target.x, target.z)
 
       person.visible = true
       person.position.set(x, PLATFORM_TOP_Y + stride, z)
-      person.rotation.y = lerp(passenger.homeYaw, walkYaw, Math.min(1, t * 2.5))
+      person.rotation.y = lerp(passenger.homeYaw, walkYaw, Math.min(1, t * 3))
 
       if (passenger.walkedMetres >= passenger.pathLength * 0.98) passenger.boarded = true
       return
@@ -271,9 +261,9 @@ export class Stations {
         z = Math.max(zMin, Math.min(zMax, z))
       }
 
-      const x = -0.35 + rand() * 0.95
+      const x = PLATFORM_WAIT_X_MIN + rand() * (PLATFORM_WAIT_X_MAX - PLATFORM_WAIT_X_MIN)
       const scale = 0.88 + rand() * 0.2
-      const yaw = Math.PI + (rand() - 0.5) * 0.55
+      const yaw = -Math.PI / 2 + (rand() - 0.5) * 0.45
 
       const bodyColor = new Color().setHSL(rand(), 0.42 + rand() * 0.35, 0.28 + rand() * 0.22)
       const skinColor = new Color(SKIN_TONES[Math.floor(rand() * SKIN_TONES.length)]!)
@@ -391,9 +381,13 @@ function boardingTarget(
     }
   }
   return {
-    x: lerp(passenger.homeX, -0.75, 0.55),
+    x: DOOR_APPROACH_X,
     z: trainLocalZ - nearestOffset,
   }
+}
+
+function yawToward(fromX: number, fromZ: number, toX: number, toZ: number): number {
+  return Math.atan2(toX - fromX, toZ - fromZ)
 }
 
 function walkPathLength(passenger: PassengerAgent, target: { x: number; z: number }): number {

@@ -5,6 +5,8 @@
   "cabColorAccent": "0x066828",
   "carriageColor": "0x066828",
   "carriageAccentColor": "0xf5d803",
+  "carriageDoorColor": "0x005613",
+  "roofColor": "0x005613",
   "type": "steam",
   "massTonnes": 117,
   "lengthMetres": 23.3,

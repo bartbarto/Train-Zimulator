@@ -63,8 +63,9 @@ export class PlatformMonitor {
     })
 
     const monitor = new Group()
-    monitor.position.set(1.22, 1.75, -0.35)
-    monitor.rotation.y = -Math.PI / 2
+    monitor.position.set(0.85, 1.45, -0.65)
+    // monitor.rotation.z = -Math.PI / 4
+    monitor.rotation.y = -Math.PI / 6
 
     const housing = new Mesh(
       new BoxGeometry(0.52, 0.36, 0.035),
@@ -93,9 +94,9 @@ export class PlatformMonitor {
   updateCamera(cabRoot: Object3D, trainRearOffsetZ: number): void {
     cabRoot.updateMatrixWorld(true)
 
-    // −X is the platform side; +Z is toward the train tail / backward along the track.
-    this.camLocalPos.set(1.85, 2.0, 1.1)
-    this.camLocalLook.set(-1.65, 1.85, trainRearOffsetZ * 0.92)
+    // +X is the platform side; camera looks at the door face from outside.
+    this.camLocalPos.set(1.95, 1.8, 4.8)
+    this.camLocalLook.set(1.42, 1.55, trainRearOffsetZ * 0.88)
 
     this.camera.position.copy(this.camLocalPos).applyMatrix4(cabRoot.matrixWorld)
     this.worldLook.copy(this.camLocalLook).applyMatrix4(cabRoot.matrixWorld)

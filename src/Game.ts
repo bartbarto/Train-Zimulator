@@ -91,6 +91,8 @@ export class Game {
       cabColorAccent: this.locomotiveSpec.cabColorAccent,
       carriageColor: this.locomotiveSpec.carriageColor,
       carriageAccentColor: this.locomotiveSpec.carriageAccentColor,
+      carriageDoorColor: this.locomotiveSpec.carriageDoorColor,
+      roofColor: this.locomotiveSpec.roofColor,
     })
     this.scene.scene.add(this.cab.root)
 
@@ -141,6 +143,8 @@ export class Game {
       cabColorAccent: loco.cabColorAccent,
       carriageColor: loco.carriageColor,
       carriageAccentColor: loco.carriageAccentColor,
+      carriageDoorColor: loco.carriageDoorColor,
+      roofColor: loco.roofColor,
     })
     savePreferredLocomotive(id)
   }

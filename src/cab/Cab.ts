@@ -81,6 +81,7 @@ export class Cab {
       h.pivot.rotation.x = damp(h.pivot.rotation.x, target, 16, dt)
     }
     this.syncDoorButton(state)
+    this.consist.updateDoors(dt, state.doorsOpen)
   }
 
   private syncDoorButton(state: ControlState): void {

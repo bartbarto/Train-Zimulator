@@ -48,6 +48,10 @@ export interface CabColorOptions {
   carriageColor?: string | number
   /** Carriage stripe/accent; falls back to `cabColorAccent` when omitted. */
   carriageAccentColor?: string | number
+  /** Carriage door tint; falls back to `carriageColor` when omitted. */
+  carriageDoorColor?: string | number
+  /** Roof tint for cab ceiling and carriage roofs; falls back to `carriageColor` then `cabColor`. */
+  roofColor?: string | number
 }
 
 function parseHexColor(value: string | number | undefined | null): number | null {
@@ -106,6 +110,24 @@ export function resolveCarriageAccentColor(color?: string | number, fallback?: s
   return parseHexColor(color) ?? parseHexColor(fallback) ?? DEFAULT_DARK
 }
 
+/** Raw carriage door colour from JSON (no tone derivation). */
+export function resolveCarriageDoorColor(
+  color?: string | number,
+  fallback?: string | number,
+  secondFallback?: string | number,
+): number {
+  return parseHexColor(color) ?? parseHexColor(fallback) ?? parseHexColor(secondFallback) ?? DEFAULT_DARK
+}
+
+/** Raw roof colour from JSON (no tone derivation). */
+export function resolveRoofColor(
+  color?: string | number,
+  fallback?: string | number,
+  secondFallback?: string | number,
+): number {
+  return parseHexColor(color) ?? parseHexColor(fallback) ?? parseHexColor(secondFallback) ?? DEFAULT_DARK
+}
+
 function createCabMaterial(color: number, metalness: number, roughness: number): MeshStandardMaterial {
   return new MeshStandardMaterial({ color, metalness, roughness })
 }
@@ -131,6 +153,7 @@ export class CabModel {
   private readonly panel: MeshStandardMaterial
   private readonly dark: MeshStandardMaterial
   private readonly accent: MeshStandardMaterial
+  private readonly roof: MeshStandardMaterial
   private readonly topPlate: Mesh
   private readonly sidePlates: Mesh[] = []
 
@@ -140,8 +163,13 @@ export class CabModel {
     this.panel = createCabMaterial(tones.panel, PANEL_METALNESS, PANEL_ROUGHNESS)
     this.dark = createCabMaterial(tones.dark, DARK_METALNESS, DARK_ROUGHNESS)
     this.accent = createAccentMaterial(DEFAULT_PANEL)
+    this.roof = createCabMaterial(
+      resolveRoofColor(colors.roofColor, colors.carriageColor, colors.cabColor),
+      PANEL_METALNESS,
+      PANEL_ROUGHNESS,
+    )
 
-    this.topPlate = plate(2.6, 0.1, 2.6, 0, 2.3, 0.3, this.dark)
+    this.topPlate = plate(2.6, 0.1, 2.6, 0, 2.3, 0.3, this.roof)
     this.buildShell()
     this.buildConsole()
     this.buildPowerLever()
@@ -154,6 +182,7 @@ export class CabModel {
     this.metal.color.setHex(tones.metal)
     this.panel.color.setHex(tones.panel)
     this.dark.color.setHex(tones.dark)
+    this.roof.color.setHex(resolveRoofColor(colors.roofColor, colors.carriageColor, colors.cabColor))
     this.applyAccent(resolveAccentColor(colors.cabColorAccent))
   }
 
@@ -161,12 +190,10 @@ export class CabModel {
     if (accentHex !== null) {
       this.accent.color.setHex(accentHex)
       this.accent.emissive.setHex(accentHex)
-      this.topPlate.material = this.accent
       for (const side of this.sidePlates) side.material = this.accent
       return
     }
 
-    this.topPlate.material = this.dark
     for (const side of this.sidePlates) side.material = this.panel
   }
 
