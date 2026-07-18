@@ -156,6 +156,10 @@ function start(): void {
   width: 3.4rem;
   height: auto;
 }
+.logo img {
+  width: 100%;
+  height: auto;
+}
 h1 {
   font-size: 1.75rem;
   font-weight: 700;
